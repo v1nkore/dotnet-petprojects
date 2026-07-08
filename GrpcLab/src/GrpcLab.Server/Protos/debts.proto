@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "GrpcLab.Contracts";
+
+package debts;
+
+// Контракт — единственный источник правды: из этого файла генерируется
+// и серверная база, и клиент. Правила эволюции без слома клиентов:
+//   - номера полей НИКОГДА не переиспользовать (удалил поле — зарезервируй: reserved 3;)
+//   - новые поля добавлять только с новыми номерами — старый клиент их молча игнорирует
+//   - тип/номер существующего поля не менять; переименование безопасно (важен номер)
+service Debts {
+  // Unary: обычный запрос-ответ
+  rpc GetDebt (GetDebtRequest) returns (DebtReply);
+
+  // Server streaming: сервер шлёт поток сообщений в один запрос —
+  // выгрузки, live-ленты, большие списки без пагинации
+  rpc StreamPayments (StreamPaymentsRequest) returns (stream PaymentReply);
+}
+
+message GetDebtRequest {
+  int32 debt_id = 1;
+}
+
+message DebtReply {
+  int32 debt_id = 1;
+  string debtor_name = 2;
+  // В proto3 нет decimal — деньги передаём в минорных единицах (копейках) int64.
+  // Классический вопрос собеса «как гонять деньги через gRPC».
+  int64 principal_minor_units = 3;
+  string currency = 4;
+  DebtStatus status = 5;
+}
+
+enum DebtStatus {
+  // Нулевое значение — всегда UNSPECIFIED: proto3 не отличает
+  // «поле не задано» от «первое значение enum» — резервируем ноль
+  DEBT_STATUS_UNSPECIFIED = 0;
+  DEBT_STATUS_ACTIVE = 1;
+  DEBT_STATUS_RESTRUCTURED = 2;
+  DEBT_STATUS_CLOSED = 3;
+}
+
+message StreamPaymentsRequest {
+  int32 debt_id = 1;
+  int32 count = 2;
+}
+
+message PaymentReply {
+  int64 amount_minor_units = 1;
+  google.protobuf.Timestamp paid_at = 2;
+}

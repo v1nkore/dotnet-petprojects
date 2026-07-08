@@ -1,0 +1,6 @@
+apiVersion: v2
+name: aspnetlab
+description: AspNetLab API — учебный чарт (шаблонизированные манифесты из ../k8s)
+type: application
+version: 0.1.0        # версия ЧАРТА
+appVersion: "0.1"     # версия ПРИЛОЖЕНИЯ (дефолт для тега образа)

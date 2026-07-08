@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CleanLab · план изучения</title>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №14 · DDD / Clean / CQRS</div>
+  <h1>CleanLab — план изучения</h1>
+  <div class="sub">Направление зависимостей · агрегат и value object · доменные события · CQRS через MediatR — закрывает раздел 7 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок чтения (~1 вечер)</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Domain/Debt.cs</td><td>Центр луковицы: Money (value object), Debt (агрегат с приватными сеттерами), события. Заметь: ни одного using на внешние пакеты.</td></tr>
+  <tr><td>2</td><td class="file">Application/Debts.cs</td><td>Порты объявлены ЗДЕСЬ (у потребителя!), команды/запросы/хендлеры, мост доменных событий в MediatR, LoggingBehavior.</td></tr>
+  <tr><td>3</td><td class="file">Infrastructure/InMemoryDebtStore.cs</td><td>Реализация портов. Мысленный эксперимент: замени на EF — какие файлы изменятся? (только этот и DI-регистрация).</td></tr>
+  <tr><td>4</td><td class="file">Api/Program.cs</td><td>Тонкий транспорт: endpoint = Send + маппинг DomainException → 422.</td></tr>
+  <tr><td>5</td><td class="file">tests/DebtTests.cs</td><td>Выигрыш наглядно: домен тестируется голым new, application — без моков БД.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Правило зависимостей.</b> Все стрелки — внутрь: Api → Infrastructure → Application → Domain. Внутренний слой не знает об внешнем. Достигается инверсией: Application объявляет <code>IDebtRepository</code>, Infrastructure реализует. Смена БД/фреймворка/транспорта не трогает бизнес-логику.</p>
+<p><b>Value object vs entity.</b> Money — без идентичности, равна по значению, иммутабельна (<code>readonly record struct</code>). Debt — есть Id, живёт во времени, меняется. VO поднимает инварианты на уровень типа: «сложить рубли с долларами» не компилируется в баг, а бросает доменную ошибку в одном месте.</p>
+<p><b>Агрегат — граница согласованности.</b> Все инварианты долга (не переплатить, не платить в закрытый) защищены методами агрегата; снаружи некорректное состояние недостижимо. Правило: транзакция меняет ОДИН агрегат; между агрегатами — eventual consistency через события (мост к OrderFlow).</p>
+<p><b>Доменные события.</b> Агрегат фиксирует факт (<code>DebtClosed</code>) и копит в списке; application-слой публикует ПОСЛЕ сохранения (подписчики не должны реагировать на несохранённое). Побочные эффекты (SMS) — в подписчиках, а не в агрегате. В проде публикация — через Outbox.</p>
+<p><b>CQRS без карго-культа.</b> Команды идут через агрегат (инварианты!), запросы — напрямую в DTO (читать через агрегат — таскать инварианты туда, где они не нужны). Здесь одно in-memory хранилище: CQRS — это разделение МОДЕЛЕЙ, а не обязательно баз. Отдельная read-база — это уже CQRS + репликация, когда чтение реально не влезает.</p>
+</div>
+<div class="warn"><b>Где оверинжиниринг (любимый вопрос на собесе):</b> CRUD без инвариантов, прототипы, маленькие сервисы с одной моделью — там эти слои чистый налог. Признаки, что пора: настоящие бизнес-инварианты, несколько транспортов (HTTP+gRPC+консьюмер), долгая жизнь кода. MediatR тоже опционален — те же руки можно сделать обычными сервисами; его ценность — pipeline behaviors и единообразие.</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 7:</b> правило зависимостей и как его обеспечивает DI; entity vs value object; агрегат и его границы; bounded context (Debt в «взыскании» ≠ Debt в «бухгалтерии»); доменные события и когда публиковать; CQRS — что разделяем и когда достаточно одной базы; anemic vs rich model; где Clean/DDD — оверинжиниринг.</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>Заменить InMemoryDebtStore на EF + Postgres — убедиться, что Domain/Application не изменились ни на строку</td><td>главный тезис архитектуры, проверенный руками</td></tr>
+  <tr><td>ValidationBehavior с FluentValidation в pipeline</td><td>стандартная связка CQRS</td></tr>
+  <tr><td>Доменные события через Outbox (взять из OrderFlow) вместо in-process publish</td><td>склейка двух проектов</td></tr>
+  <tr><td>Второй bounded context (например, «Бухгалтерия» со своим взглядом на долг) + антикоррупционный слой</td><td>стратегический DDD</td></tr>
+</table>
+
+</div>
+</body>
+</html>

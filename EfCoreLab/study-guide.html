@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EfCoreLab · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+h3{font-size:16.5px; margin:26px 0 8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+nav.toc{margin:0 0 8px; padding:18px 20px; background:var(--card); border:1px solid var(--line); border-radius:12px}
+nav.toc b{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+nav.toc ol{margin:10px 0 0; padding-left:22px}
+nav.toc a{color:var(--ink); text-decoration:none}
+nav.toc a:hover{color:var(--accent)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №6 · EF Core + базы данных</div>
+  <h1>EfCoreLab — план изучения</h1>
+  <div class="sub">N+1 · change tracking · optimistic concurrency (xmin) · EXPLAIN ANALYZE и покрывающие индексы — закрывает разделы 4–5 из «200 ответов»</div>
+</header>
+
+<nav class="toc">
+  <b>Маршрут</b>
+  <ol>
+    <li><a href="#domain">Предметная область</a></li>
+    <li><a href="#route">Порядок чтения кода (~1 вечер)</a></li>
+    <li><a href="#nplus1">N+1: три версии одного чтения</a></li>
+    <li><a href="#tracking">Change tracking: цена по умолчанию</a></li>
+    <li><a href="#concurrency">Optimistic concurrency через xmin</a></li>
+    <li><a href="#explain">Читаем план запроса</a></li>
+    <li><a href="#bugs">Три нюанса, пойманных в этом проекте</a></li>
+    <li><a href="#interview">Мостик к вопросам собеса</a></li>
+    <li><a href="#scale">Куда масштабировать</a></li>
+  </ol>
+</nav>
+
+<h2 id="domain"><span class="n">1</span>Предметная область</h2>
+<p>Домен взыскания — твой рабочий контекст: <code>Debtor → Debt → Payment</code>. 100 должников, 300 долгов, 300 000 платежей в настоящем Postgres 16 (docker-compose, порт 5455). Консольное приложение прогоняет 4 сценария и каждое утверждение доказывает цифрами: числом SQL-запросов, миллисекундами, строками плана.</p>
+<p>Почему это важно: ORM — самый частый источник проблем производительности в проде, и все они сводятся к трём вопросам: <b>сколько запросов ушло</b> (N+1), <b>что тащим и трекаем зря</b> (change tracking), <b>как база исполняет запрос</b> (план). Плюс конкурентные правки — четвёртый всадник.</p>
+
+<h2 id="route"><span class="n">2</span>Порядок чтения кода</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Data/Entities.cs</td><td>Почему навигации <code>virtual</code> (lazy proxies), что за <code>uint Version</code> (xmin).</td></tr>
+  <tr><td>2</td><td class="file">Data/CollectionsDbContext.cs</td><td><code>IsRowVersion()</code> на uint = маппинг на xmin; <code>HasPrecision</code> для денег; индексов нет намеренно.</td></tr>
+  <tr><td>3</td><td class="file">Data/QueryCountingInterceptor.cs</td><td><code>DbCommandInterceptor</code> — как посчитать запросы честно. В проде это метрика в APM.</td></tr>
+  <tr><td>4</td><td class="file">Data/Seed.cs</td><td>Почему 300k строк сеются <code>generate_series</code>, а не <code>AddRange</code>.</td></tr>
+  <tr><td>5</td><td class="file">Program.cs</td><td>Фабрика короткоживущих контекстов — DbContext это unit of work, не сервис-долгожитель.</td></tr>
+  <tr><td>6–9</td><td class="file">Scenarios/*.cs</td><td>По сценарию за раз, запуская и сверяя вывод с кодом.</td></tr>
+</table>
+
+<h2 id="nplus1"><span class="n">3</span>N+1: три версии одного чтения</h2>
+<table>
+  <tr><th>Способ</th><th>Запросов</th><th>Время</th><th>Что не так / что так</th></tr>
+  <tr><td>lazy loading</td><td><b>101</b></td><td>306 мс</td><td>Обращение к <code>d.Debts</code> выглядит как чтение свойства, а прокси молча ходит в базу. Опаснее всего то, что код <i>работает</i> — просто в 100 раз дороже.</td></tr>
+  <tr><td><code>Include</code></td><td>1</td><td>50 мс</td><td>Один JOIN, но тянутся все колонки долгов, и всё попадает в change tracker (тут спасён <code>AsNoTracking</code>).</td></tr>
+  <tr><td>проекция</td><td>1</td><td>69 мс</td><td><code>Sum</code> уехал в SQL (<code>GROUP BY</code> в базе), по сети едут имя и число. Анонимный тип не трекается в принципе.</td></tr>
+</table>
+<div class="tip"><b>Правило:</b> для чтения — проекция в DTO; <code>Include</code> — когда нужна именно сущность целиком (для последующего изменения); lazy loading в бэкенде — почти всегда выключить. Отдельно запомни: <code>Include</code> с двумя-тремя коллекциями порождает cartesian explosion — лечится <code>AsSplitQuery()</code>.</div>
+
+<h2 id="tracking"><span class="n">4</span>Change tracking: цена по умолчанию</h2>
+<p>Каждая затреканная сущность — это снапшот всех значений (для последующего diff в <code>SaveChanges</code>) плюс запись в identity map. На 50 000 строк: <b>313 мс с трекингом против 53 мс без</b> — в 6 раз. Identity map — полезный побочный эффект: два запроса одной строки в одном контексте вернут <i>один и тот же объект</i> (сценарий это печатает: <code>ReferenceEquals = True</code>).</p>
+<div class="warn"><b>Ловушка, пойманная этим же проектом:</b> присваивание того же значения — не изменение. <code>SaveChanges</code> сравнивает снапшоты и, если diff пуст, вообще не отправляет UPDATE. Из-за этого сценарий конкуренции «ломался» при повторном запуске: статус уже был Restructured, UPDATE не уходил, xmin не менялся — и конфликт не возникал. Понимание «SaveChanges — это diff снапшотов» объясняет кучу «мистики» EF.</div>
+
+<h2 id="concurrency"><span class="n">5</span>Optimistic concurrency через xmin</h2>
+<p>Сценарий «два оператора открыли одну карточку долга»: оба читают строку, оба сохраняют. Без токена второй молча затирает первого — классический lost update. С токеном EF генерирует:</p>
+<pre><code>UPDATE "Debts" SET ... WHERE "Id" = @id AND xmin = @версия_на_момент_чтения</code></pre>
+<p>0 затронутых строк → <code>DbUpdateConcurrencyException</code>. Дальше — осознанное решение: перечитать и повторить (в сценарии), смержить по полям или отдать пользователю 409.</p>
+<div class="tip"><b>Фишка Postgres:</b> в SQL Server для этого нужна колонка <code>rowversion</code> и миграция. В Postgres токен бесплатный — системная колонка <b>xmin</b> (id транзакции, менявшей строку последней) уже есть у каждой строки: <code>uint Version</code> + <code>IsRowVersion()</code> у Npgsql, и никакой миграции. Заодно это дверь в разговор про MVCC: версии строк, зачем VACUUM, откуда bloat.</div>
+
+<h2 id="explain"><span class="n">6</span>Читаем план запроса</h2>
+<p>Запрос-отчёт «суммы подтверждённых платежей за июнь по долгам» на 300k строк:</p>
+<table>
+  <tr><th></th><th>Узел плана</th><th>Время</th><th>Буферы (страниц по 8КБ)</th></tr>
+  <tr><td>без индекса</td><td>Parallel Seq Scan, <code>Rows Removed by Filter: 143 918</code></td><td>12.1 мс</td><td>2507</td></tr>
+  <tr><td>с индексом</td><td><b>Index Only Scan</b></td><td>2.4 мс</td><td>77</td></tr>
+</table>
+<p>Ключевые строки, которые надо уметь читать: узел скана (Seq/Index/Index Only/Bitmap), <code>Rows Removed by Filter</code> (сколько прочитано впустую), <code>Buffers</code> (реальное I/O), расхождение <code>rows=</code> оценки и факта (кривая статистика → ANALYZE).</p>
+<div class="card">
+<p><b>Анатомия индекса</b> <code>("Status", "PaidAt") INCLUDE ("DebtId", "Amount")</code>:</p>
+<ul>
+<li>порядок колонок: сначала равенство (<code>Status = 1</code>), потом диапазон (<code>PaidAt BETWEEN</code>) — наоборот индекс почти бесполезен, диапазон «разрезает» дерево;</li>
+<li><code>INCLUDE</code> кладёт колонки в листья индекса, не включая их в ключ — запрос покрыт целиком, к heap не ходим (Index Only Scan);</li>
+<li>но Index Only Scan случится, только если visibility map актуальна — см. нюанс ниже.</li>
+</ul>
+</div>
+
+<h2 id="bugs"><span class="n">7</span>Три нюанса, пойманных в этом проекте</h2>
+<div class="card">
+<p><b>1. Index Only Scan не появился после CREATE INDEX + ANALYZE.</b> Планировщик выбирал Bitmap Heap Scan. Причина — MVCC: индекс не хранит информацию о видимости версий строк, и без актуальной visibility map Postgres обязан заглядывать в heap для каждой строки. <code>VACUUM ANALYZE</code> — и Index Only Scan появился (12.1 → 2.4 мс). На собесе это выделяет из толпы: большинство знает «индекс ускоряет», единицы — почему покрывающий индекс может не сработать.</p>
+<p><b>2. UPDATE, который не отправился.</b> Присваивание того же значения не меняет снапшот → SaveChanges не шлёт UPDATE → xmin не растёт. См. раздел 4.</p>
+<p><b>3. AddRange на 300k строк — это боль.</b> Каждая сущность трекается, вставки построчные. <code>generate_series</code> одним оператором — доли секунды. В реале: EF для OLTP, для bulk — COPY / bulk-библиотеки / raw SQL.</p>
+</div>
+
+<h2 id="interview"><span class="n">8</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>EF Core:</b> как найти и починить N+1 (плюс: чем интерцептор лучше «взгляда в логи»); Include vs проекция vs split query; когда AsNoTracking; как работает SaveChanges (снапшоты, diff); identity map; почему DbContext короткоживущий и не потокобезопасный.</div>
+<div class="q"><b>Конкуренция:</b> optimistic vs pessimistic; lost update и как его предотвращает токен; xmin vs rowversion; стратегии обработки DbUpdateConcurrencyException; когда нужен SELECT ... FOR UPDATE вместо оптимизма.</div>
+<div class="q"><b>SQL/Postgres:</b> чтение EXPLAIN ANALYZE (сканы, Rows Removed, Buffers); составные индексы и порядок колонок; покрывающие индексы и INCLUDE; MVCC, VACUUM, visibility map; чем ANALYZE отличается от VACUUM.</div>
+
+<h2 id="scale"><span class="n">9</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td><b>Уровни изоляции руками:</b> два соединения, воспроизвести non-repeatable read на READ COMMITTED и убедиться, что REPEATABLE READ его убирает</td><td>изоляция транзакций — топ-вопрос собесов</td></tr>
+  <tr><td><b>Миграции вместо EnsureCreated:</b> завести dotnet-ef, сделать миграцию с добавлением NOT NULL колонки на живых данных (expand → backfill → contract)</td><td>zero-downtime миграции</td></tr>
+  <tr><td><b>Client-side evaluation:</b> написать запрос с C#-функцией в Where, получить исключение перевода, починить</td><td>граница «что уедет в SQL»</td></tr>
+  <tr><td><b>Пагинация:</b> offset vs keyset (seek) на 300k строк, замерить деградацию offset на глубоких страницах</td><td>классика оптимизации выборок</td></tr>
+  <tr><td><b>ExecuteUpdate/ExecuteDelete</b> (EF 7+): массовое обновление без загрузки сущностей — сравнить с циклом</td><td>современный EF API</td></tr>
+  <tr><td><b>Testcontainers:</b> завернуть сценарии в xUnit с поднятием Postgres из теста</td><td>мост к проекту №10</td></tr>
+</table>
+
+<p class="sub" style="margin-top:40px">Следующий проект: <b>OrderFlow (№2+№3)</b> — Kafka, Outbox, Saga, Polly в одном домене.</p>
+
+</div>
+</body>
+</html>

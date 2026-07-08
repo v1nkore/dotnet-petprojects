@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RedisLab · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №13 · Кэширование и Redis</div>
+  <h1>RedisLab — план изучения</h1>
+  <div class="sub">cache-aside · stampede и три защиты · распределённый лок · инвалидация — закрывает раздел 11 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок чтения (~1 вечер)</h2>
+<table>
+  <tr><th>Шаг</th><th>Что</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Program.cs</td><td>ConnectionMultiplexer — один на приложение (как HttpClient): мультиплексирование, потокобезопасность.</td></tr>
+  <tr><td>2</td><td class="file">SlowDatabase.cs</td><td>Счётчик походов в БД — все сценарии доказываются этим числом.</td></tr>
+  <tr><td>3</td><td class="file">Scenarios.cs</td><td>Сверху вниз: cache-aside → три версии борьбы со stampede → инвалидация. Запусти и сверь вывод с кодом.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Cache-aside vs read-through/write-through.</b> В cache-aside кэш пассивен: приложение само читает, само наполняет, само инвалидирует. Read-through — наполнение прячется в кэш-прослойку; write-through — запись идёт сквозь кэш в БД. Cache-aside — дефолт индустрии: простой, кэш можно снести целиком без потери данных.</p>
+<p><b>Stampede (dog-piling).</b> Горячий ключ протух → N конкурентных промахов → N одинаковых запросов в БД. В сценарии: <b>50 походов вместо 1</b>. Смертельно на дорогих запросах: БД складывается ровно тогда, когда кэш «должен спасать». Три защиты:</p>
+<ul>
+<li><b>Single-flight в процессе</b> — SemaphoreSlim на ключ + double-check после захвата (пока ждал — сосед уже наполнил кэш);</li>
+<li><b>Распределённый лок</b> — <code>SET NX PX</code>: работает между всеми инстансами сервиса;</li>
+<li><b>Early refresh</b> — обновлять значение фоном ДО истечения TTL: промахов не бывает вовсе (ценой фоновой работы).</li>
+</ul>
+<p><b>Анатомия распределённого лока</b> (всё в <code>GetWithDistributedLockAsync</code>):</p>
+<pre><code>SET lock:key {случайный-токен} NX PX 5000   -- атомарно: поставь если нет, с TTL
+...работа...
+-- снятие: ТОЛЬКО свой лок, атомарно через Lua (compare-and-delete)
+if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end</code></pre>
+<p>Три обязательных детали: TTL (упавший держатель не вечен), токен владельца, Lua-снятие (наш лок мог протухнуть, и ключ уже держит другой — нельзя удалить чужой). Это мини-Redlock на одном узле — и честный ответ, что для мультиузловой строгости нужен Redlock/ZooKeeper, но чаще хватает этого.</p>
+<p><b>Инвалидация: DEL, не перезапись.</b> «Обновил БД → DEL ключа» проще и безопаснее write-through: у перезаписи есть гонка (две записи обновили кэш в противоположном порядке — в кэше старое навсегда). TTL остаётся страховкой. Полной согласованности кэша с БД не существует — выбираем допустимое окно рассинхрона.</p>
+</div>
+<div class="warn"><b>Классика для собеса — почему SET+EXPIRE двумя командами это баг:</b> упади процесс между ними — ключ останется без TTL навсегда. Всё, что должно быть атомарным в Redis, делается одной командой, MULTI/EXEC или Lua.</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Паттерны:</b> cache-aside / read-through / write-through / write-behind; stampede и все три защиты; инвалидация и её гонки; выбор TTL; какие данные кэшировать нельзя.</div>
+<div class="q"><b>Redis:</b> почему быстрый (память + один поток на команды = нет локов); структуры (string, hash, list, set, zset, stream) и типичные применения; distributed lock и Redlock; политики eviction (allkeys-lru vs volatile-*); persistence (RDB vs AOF); ConnectionMultiplexer.</div>
+<div class="q"><b>Связка с другими проектами:</b> in-memory кэш TtlCache — первый уровень; Redis — второй, разделяемый между инстансами (и переживает деплой). HybridCache в .NET 9 объединяет оба уровня + защиту от stampede из коробки.</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>Early refresh: фоновое обновление за 20% до конца TTL — сравнить с локом по латентности p99</td><td>третья стратегия против stampede</td></tr>
+  <tr><td>Rate limiter на INCR + EXPIRE (или sliding window на zset)</td><td>структуры Redis в деле</td></tr>
+  <tr><td>Прикрутить Redis к OrderFlow: кэш статусов заказов + инвалидация из консьюмера событий</td><td>кэш в событийной системе</td></tr>
+  <tr><td>HybridCache (.NET 9): переписать сценарии на него, сравнить количество кода</td><td>современный стандартный стек</td></tr>
+  <tr><td>Наполнить 1М ключей, выставить maxmemory + allkeys-lru, посмотреть eviction в INFO</td><td>политики вытеснения вживую</td></tr>
+</table>
+
+</div>
+</body>
+</html>

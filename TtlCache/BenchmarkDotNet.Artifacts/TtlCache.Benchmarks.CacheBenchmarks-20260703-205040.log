@@ -1,0 +1,797 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 9 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet  restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1/" /p:OutDir="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0/" /p:OutputPath="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0/" /p:PublishDir="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\publish/" in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1
+// command took 3.16 sec and exited with 0
+// start dotnet  build -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1/" /p:OutDir="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0/" /p:OutputPath="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0/" /p:PublishDir="C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\publish/" --output "C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0/" in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1
+// command took 9.85 sec and exited with 0
+// ***** Done, took 00:00:13 (13.07 sec)   *****
+// Found 9 benchmarks:
+//   CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+//   CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+//   CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+//   CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+//   CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+//   CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+//   CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+//   CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+//   CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 936 1456 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.LockDictionary(Threads: 1)" --job ShortRun --benchmarkId 0 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 154600.00 ns, 154.6000 us/op
+WorkloadJitting  1: 1 op, 7844400.00 ns, 7.8444 ms/op
+
+OverheadJitting  2: 16 op, 228800.00 ns, 14.3000 us/op
+WorkloadJitting  2: 16 op, 66892800.00 ns, 4.1808 ms/op
+
+WorkloadPilot    1: 16 op, 64277100.00 ns, 4.0173 ms/op
+WorkloadPilot    2: 32 op, 120139000.00 ns, 3.7543 ms/op
+WorkloadPilot    3: 64 op, 314947600.00 ns, 4.9211 ms/op
+WorkloadPilot    4: 128 op, 407140000.00 ns, 3.1808 ms/op
+WorkloadPilot    5: 256 op, 803802600.00 ns, 3.1399 ms/op
+
+OverheadWarmup   1: 256 op, 1900.00 ns, 7.4219 ns/op
+OverheadWarmup   2: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadWarmup   3: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   4: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   5: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   6: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   7: 256 op, 600.00 ns, 2.3438 ns/op
+
+OverheadActual   1: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual   2: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual   3: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   4: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   5: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   6: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   7: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual   8: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   9: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  10: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  11: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  12: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  13: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  14: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  15: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  16: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  17: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  18: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  19: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  20: 256 op, 700.00 ns, 2.7344 ns/op
+
+WorkloadWarmup   1: 256 op, 802210900.00 ns, 3.1336 ms/op
+WorkloadWarmup   2: 256 op, 782413100.00 ns, 3.0563 ms/op
+WorkloadWarmup   3: 256 op, 780062000.00 ns, 3.0471 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 256 op, 780067200.00 ns, 3.0471 ms/op
+WorkloadActual   2: 256 op, 791674800.00 ns, 3.0925 ms/op
+WorkloadActual   3: 256 op, 780666000.00 ns, 3.0495 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 256 op, 780066500.00 ns, 3.0471 ms/op
+WorkloadResult   2: 256 op, 791674100.00 ns, 3.0925 ms/op
+WorkloadResult   3: 256 op, 780665300.00 ns, 3.0495 ms/op
+// GC:  0 0 0 6144 256
+// Threading:  0 0 256
+
+// AfterAll
+// Benchmark Process 18424 has exited with code 0.
+
+Mean = 3.063 ms, StdErr = 0.015 ms (0.48%), N = 3, StdDev = 0.026 ms
+Min = 3.047 ms, Q1 = 3.048 ms, Median = 3.049 ms, Q3 = 3.071 ms, Max = 3.092 ms
+IQR = 0.023 ms, LowerFence = 3.014 ms, UpperFence = 3.105 ms
+ConfidenceInterval = [2.597 ms; 3.529 ms] (CI 99.9%), Margin = 0.466 ms (15.21% of Mean)
+Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 8 (88,9 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 1m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 924 1044 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ConcurrentDictionary(Threads: 1)" --job ShortRun --benchmarkId 1 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 125300.00 ns, 125.3000 us/op
+WorkloadJitting  1: 1 op, 3436300.00 ns, 3.4363 ms/op
+
+OverheadJitting  2: 16 op, 179500.00 ns, 11.2188 us/op
+WorkloadJitting  2: 16 op, 21865200.00 ns, 1.3666 ms/op
+
+WorkloadPilot    1: 16 op, 19189900.00 ns, 1.1994 ms/op
+WorkloadPilot    2: 32 op, 39270100.00 ns, 1.2272 ms/op
+WorkloadPilot    3: 64 op, 75980800.00 ns, 1.1872 ms/op
+WorkloadPilot    4: 128 op, 155592300.00 ns, 1.2156 ms/op
+WorkloadPilot    5: 256 op, 222899100.00 ns, 870.6996 us/op
+WorkloadPilot    6: 512 op, 431280100.00 ns, 842.3439 us/op
+WorkloadPilot    7: 1024 op, 886794500.00 ns, 866.0103 us/op
+
+OverheadWarmup   1: 1024 op, 3700.00 ns, 3.6133 ns/op
+OverheadWarmup   2: 1024 op, 2200.00 ns, 2.1484 ns/op
+OverheadWarmup   3: 1024 op, 2200.00 ns, 2.1484 ns/op
+OverheadWarmup   4: 1024 op, 2300.00 ns, 2.2461 ns/op
+OverheadWarmup   5: 1024 op, 2100.00 ns, 2.0508 ns/op
+OverheadWarmup   6: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadWarmup   7: 1024 op, 2200.00 ns, 2.1484 ns/op
+
+OverheadActual   1: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual   2: 1024 op, 2100.00 ns, 2.0508 ns/op
+OverheadActual   3: 1024 op, 2100.00 ns, 2.0508 ns/op
+OverheadActual   4: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual   5: 1024 op, 1900.00 ns, 1.8555 ns/op
+OverheadActual   6: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual   7: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual   8: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual   9: 1024 op, 1900.00 ns, 1.8555 ns/op
+OverheadActual  10: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual  11: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual  12: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual  13: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual  14: 1024 op, 2000.00 ns, 1.9531 ns/op
+OverheadActual  15: 1024 op, 2000.00 ns, 1.9531 ns/op
+
+WorkloadWarmup   1: 1024 op, 892977100.00 ns, 872.0479 us/op
+WorkloadWarmup   2: 1024 op, 854939100.00 ns, 834.9015 us/op
+WorkloadWarmup   3: 1024 op, 822032800.00 ns, 802.7664 us/op
+
+// BeforeActualRun
+WorkloadActual   1: 1024 op, 840752000.00 ns, 821.0469 us/op
+WorkloadActual   2: 1024 op, 815765000.00 ns, 796.6455 us/op
+WorkloadActual   3: 1024 op, 831813900.00 ns, 812.3183 us/op
+
+// AfterActualRun
+WorkloadResult   1: 1024 op, 840750000.00 ns, 821.0449 us/op
+WorkloadResult   2: 1024 op, 815763000.00 ns, 796.6436 us/op
+WorkloadResult   3: 1024 op, 831811900.00 ns, 812.3163 us/op
+// GC:  0 0 0 24576 1024
+// Threading:  0 0 1024
+
+// AfterAll
+// Benchmark Process 26728 has exited with code 0.
+
+Mean = 810.002 μs, StdErr = 7.139 μs (0.88%), N = 3, StdDev = 12.364 μs
+Min = 796.644 μs, Q1 = 804.480 μs, Median = 812.316 μs, Q3 = 816.681 μs, Max = 821.045 μs
+IQR = 12.201 μs, LowerFence = 786.179 μs, UpperFence = 834.982 μs
+ConfidenceInterval = [584.431 μs; 1,035.572 μs] (CI 99.9%), Margin = 225.570 μs (27.85% of Mean)
+Skewness = -0.18, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 7 (77,8 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 1524 1520 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ReaderWriterLockSlim(Threads: 1)" --job ShortRun --benchmarkId 2 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 115300.00 ns, 115.3000 us/op
+WorkloadJitting  1: 1 op, 5914300.00 ns, 5.9143 ms/op
+
+OverheadJitting  2: 16 op, 186700.00 ns, 11.6688 us/op
+WorkloadJitting  2: 16 op, 54330100.00 ns, 3.3956 ms/op
+
+WorkloadPilot    1: 16 op, 55869500.00 ns, 3.4918 ms/op
+WorkloadPilot    2: 32 op, 113497800.00 ns, 3.5468 ms/op
+WorkloadPilot    3: 64 op, 317568300.00 ns, 4.9620 ms/op
+WorkloadPilot    4: 128 op, 396093600.00 ns, 3.0945 ms/op
+WorkloadPilot    5: 256 op, 807729700.00 ns, 3.1552 ms/op
+
+OverheadWarmup   1: 256 op, 2200.00 ns, 8.5938 ns/op
+OverheadWarmup   2: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadWarmup   3: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadWarmup   4: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadWarmup   5: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   6: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadWarmup   7: 256 op, 600.00 ns, 2.3438 ns/op
+
+OverheadActual   1: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   2: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   3: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadActual   4: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual   5: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadActual   6: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   7: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   8: 256 op, 1900.00 ns, 7.4219 ns/op
+OverheadActual   9: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  10: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  11: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  12: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  13: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  14: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  15: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  16: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadActual  17: 256 op, 700.00 ns, 2.7344 ns/op
+OverheadActual  18: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  19: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  20: 256 op, 600.00 ns, 2.3438 ns/op
+
+WorkloadWarmup   1: 256 op, 792680300.00 ns, 3.0964 ms/op
+WorkloadWarmup   2: 256 op, 799373700.00 ns, 3.1226 ms/op
+WorkloadWarmup   3: 256 op, 892023600.00 ns, 3.4845 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 256 op, 940537000.00 ns, 3.6740 ms/op
+WorkloadActual   2: 256 op, 799529200.00 ns, 3.1232 ms/op
+WorkloadActual   3: 256 op, 812961200.00 ns, 3.1756 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 256 op, 940536250.00 ns, 3.6740 ms/op
+WorkloadResult   2: 256 op, 799528450.00 ns, 3.1232 ms/op
+WorkloadResult   3: 256 op, 812960450.00 ns, 3.1756 ms/op
+// GC:  0 0 0 6144 256
+// Threading:  0 0 256
+
+// AfterAll
+// Benchmark Process 11508 has exited with code 0.
+
+Mean = 3.324 ms, StdErr = 0.176 ms (5.28%), N = 3, StdDev = 0.304 ms
+Min = 3.123 ms, Q1 = 3.149 ms, Median = 3.176 ms, Q3 = 3.425 ms, Max = 3.674 ms
+IQR = 0.275 ms, LowerFence = 2.736 ms, UpperFence = 3.838 ms
+ConfidenceInterval = [-2.222 ms; 8.870 ms] (CI 99.9%), Margin = 5.546 ms (166.84% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 6 (66,7 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 1564 1560 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.LockDictionary(Threads: 4)" --job ShortRun --benchmarkId 3 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 118900.00 ns, 118.9000 us/op
+WorkloadJitting  1: 1 op, 74206000.00 ns, 74.2060 ms/op
+
+WorkloadPilot    1: 2 op, 126644200.00 ns, 63.3221 ms/op
+WorkloadPilot    2: 3 op, 183534800.00 ns, 61.1783 ms/op
+WorkloadPilot    3: 4 op, 225523700.00 ns, 56.3809 ms/op
+WorkloadPilot    4: 5 op, 305028500.00 ns, 61.0057 ms/op
+WorkloadPilot    5: 6 op, 354919900.00 ns, 59.1533 ms/op
+WorkloadPilot    6: 7 op, 417064200.00 ns, 59.5806 ms/op
+WorkloadPilot    7: 8 op, 473851300.00 ns, 59.2314 ms/op
+WorkloadPilot    8: 9 op, 532394500.00 ns, 59.1549 ms/op
+
+WorkloadWarmup   1: 9 op, 526047700.00 ns, 58.4497 ms/op
+WorkloadWarmup   2: 9 op, 522586100.00 ns, 58.0651 ms/op
+WorkloadWarmup   3: 9 op, 427081600.00 ns, 47.4535 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 9 op, 346255700.00 ns, 38.4729 ms/op
+WorkloadActual   2: 9 op, 367705700.00 ns, 40.8562 ms/op
+WorkloadActual   3: 9 op, 343642500.00 ns, 38.1825 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 9 op, 346255700.00 ns, 38.4729 ms/op
+WorkloadResult   2: 9 op, 367705700.00 ns, 40.8562 ms/op
+WorkloadResult   3: 9 op, 343642500.00 ns, 38.1825 ms/op
+// GC:  0 0 0 7848 9
+// Threading:  36 585 9
+
+// AfterAll
+// Benchmark Process 2196 has exited with code 0.
+
+Mean = 39.171 ms, StdErr = 0.847 ms (2.16%), N = 3, StdDev = 1.467 ms
+Min = 38.182 ms, Q1 = 38.328 ms, Median = 38.473 ms, Q3 = 39.665 ms, Max = 40.856 ms
+IQR = 1.337 ms, LowerFence = 36.322 ms, UpperFence = 41.670 ms
+ConfidenceInterval = [12.406 ms; 65.935 ms] (CI 99.9%), Margin = 26.764 ms (68.33% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 5 (55,6 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 1488 1496 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ConcurrentDictionary(Threads: 4)" --job ShortRun --benchmarkId 4 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 123500.00 ns, 123.5000 us/op
+WorkloadJitting  1: 1 op, 9462900.00 ns, 9.4629 ms/op
+
+OverheadJitting  2: 16 op, 194300.00 ns, 12.1438 us/op
+WorkloadJitting  2: 16 op, 40564500.00 ns, 2.5353 ms/op
+
+WorkloadPilot    1: 16 op, 38533800.00 ns, 2.4084 ms/op
+WorkloadPilot    2: 32 op, 76622900.00 ns, 2.3945 ms/op
+WorkloadPilot    3: 64 op, 142111700.00 ns, 2.2205 ms/op
+WorkloadPilot    4: 128 op, 221117400.00 ns, 1.7275 ms/op
+WorkloadPilot    5: 256 op, 461362900.00 ns, 1.8022 ms/op
+WorkloadPilot    6: 512 op, 971202700.00 ns, 1.8969 ms/op
+
+OverheadWarmup   1: 512 op, 2900.00 ns, 5.6641 ns/op
+OverheadWarmup   2: 512 op, 1400.00 ns, 2.7344 ns/op
+OverheadWarmup   3: 512 op, 1400.00 ns, 2.7344 ns/op
+OverheadWarmup   4: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadWarmup   5: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadWarmup   6: 512 op, 1300.00 ns, 2.5391 ns/op
+
+OverheadActual   1: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadActual   2: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual   3: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadActual   4: 512 op, 1100.00 ns, 2.1484 ns/op
+OverheadActual   5: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual   6: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual   7: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual   8: 512 op, 1100.00 ns, 2.1484 ns/op
+OverheadActual   9: 512 op, 1100.00 ns, 2.1484 ns/op
+OverheadActual  10: 512 op, 1100.00 ns, 2.1484 ns/op
+OverheadActual  11: 512 op, 1100.00 ns, 2.1484 ns/op
+OverheadActual  12: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual  13: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual  14: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual  15: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadActual  16: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual  17: 512 op, 1200.00 ns, 2.3438 ns/op
+OverheadActual  18: 512 op, 1400.00 ns, 2.7344 ns/op
+OverheadActual  19: 512 op, 1300.00 ns, 2.5391 ns/op
+OverheadActual  20: 512 op, 1200.00 ns, 2.3438 ns/op
+
+WorkloadWarmup   1: 512 op, 975637500.00 ns, 1.9055 ms/op
+WorkloadWarmup   2: 512 op, 929259300.00 ns, 1.8150 ms/op
+WorkloadWarmup   3: 512 op, 920260100.00 ns, 1.7974 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 512 op, 922233700.00 ns, 1.8012 ms/op
+WorkloadActual   2: 512 op, 918323200.00 ns, 1.7936 ms/op
+WorkloadActual   3: 512 op, 910129000.00 ns, 1.7776 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 512 op, 922232500.00 ns, 1.8012 ms/op
+WorkloadResult   2: 512 op, 918322000.00 ns, 1.7936 ms/op
+WorkloadResult   3: 512 op, 910127800.00 ns, 1.7776 ms/op
+// GC:  0 0 0 446464 512
+// Threading:  2048 64 512
+
+// AfterAll
+// Benchmark Process 16380 has exited with code 0.
+
+Mean = 1.791 ms, StdErr = 0.007 ms (0.39%), N = 3, StdDev = 0.012 ms
+Min = 1.778 ms, Q1 = 1.786 ms, Median = 1.794 ms, Q3 = 1.797 ms, Max = 1.801 ms
+IQR = 0.012 ms, LowerFence = 1.768 ms, UpperFence = 1.815 ms
+ConfidenceInterval = [1.571 ms; 2.011 ms] (CI 99.9%), Margin = 0.220 ms (12.29% of Mean)
+Skewness = -0.22, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 4 (44,4 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 1560 1540 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ReaderWriterLockSlim(Threads: 4)" --job ShortRun --benchmarkId 5 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 161900.00 ns, 161.9000 us/op
+WorkloadJitting  1: 1 op, 33770400.00 ns, 33.7704 ms/op
+
+WorkloadPilot    1: 2 op, 54277200.00 ns, 27.1386 ms/op
+WorkloadPilot    2: 3 op, 77670700.00 ns, 25.8902 ms/op
+WorkloadPilot    3: 4 op, 142448600.00 ns, 35.6122 ms/op
+WorkloadPilot    4: 5 op, 328863600.00 ns, 65.7727 ms/op
+WorkloadPilot    5: 6 op, 171632600.00 ns, 28.6054 ms/op
+WorkloadPilot    6: 7 op, 147513100.00 ns, 21.0733 ms/op
+WorkloadPilot    7: 8 op, 164653200.00 ns, 20.5817 ms/op
+WorkloadPilot    8: 9 op, 189701100.00 ns, 21.0779 ms/op
+WorkloadPilot    9: 10 op, 207973000.00 ns, 20.7973 ms/op
+WorkloadPilot   10: 11 op, 226785800.00 ns, 20.6169 ms/op
+WorkloadPilot   11: 12 op, 248368900.00 ns, 20.6974 ms/op
+WorkloadPilot   12: 13 op, 271977600.00 ns, 20.9214 ms/op
+WorkloadPilot   13: 14 op, 287857900.00 ns, 20.5613 ms/op
+WorkloadPilot   14: 15 op, 304834400.00 ns, 20.3223 ms/op
+WorkloadPilot   15: 16 op, 325677300.00 ns, 20.3548 ms/op
+WorkloadPilot   16: 32 op, 650887500.00 ns, 20.3402 ms/op
+
+WorkloadWarmup   1: 32 op, 618927300.00 ns, 19.3415 ms/op
+WorkloadWarmup   2: 32 op, 696689500.00 ns, 21.7715 ms/op
+WorkloadWarmup   3: 32 op, 737318000.00 ns, 23.0412 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 32 op, 728151300.00 ns, 22.7547 ms/op
+WorkloadActual   2: 32 op, 585452500.00 ns, 18.2954 ms/op
+WorkloadActual   3: 32 op, 581545500.00 ns, 18.1733 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 32 op, 728151300.00 ns, 22.7547 ms/op
+WorkloadResult   2: 32 op, 585452500.00 ns, 18.2954 ms/op
+WorkloadResult   3: 32 op, 581545500.00 ns, 18.1733 ms/op
+// GC:  0 0 0 27904 32
+// Threading:  128 0 32
+
+// AfterAll
+// Benchmark Process 28460 has exited with code 0.
+
+Mean = 19.741 ms, StdErr = 1.507 ms (7.63%), N = 3, StdDev = 2.611 ms
+Min = 18.173 ms, Q1 = 18.234 ms, Median = 18.295 ms, Q3 = 20.525 ms, Max = 22.755 ms
+IQR = 2.291 ms, LowerFence = 14.798 ms, UpperFence = 23.961 ms
+ConfidenceInterval = [-27.885 ms; 67.367 ms] (CI 99.9%), Margin = 47.626 ms (241.25% of Mean)
+Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 3 (33,3 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 872 1492 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.LockDictionary(Threads: 8)" --job ShortRun --benchmarkId 6 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 121700.00 ns, 121.7000 us/op
+WorkloadJitting  1: 1 op, 233456600.00 ns, 233.4566 ms/op
+
+WorkloadPilot    1: 2 op, 397339100.00 ns, 198.6696 ms/op
+WorkloadPilot    2: 3 op, 537613600.00 ns, 179.2045 ms/op
+
+WorkloadWarmup   1: 3 op, 540313600.00 ns, 180.1045 ms/op
+WorkloadWarmup   2: 3 op, 509219900.00 ns, 169.7400 ms/op
+WorkloadWarmup   3: 3 op, 540508100.00 ns, 180.1694 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 3 op, 521282700.00 ns, 173.7609 ms/op
+WorkloadActual   2: 3 op, 536091000.00 ns, 178.6970 ms/op
+WorkloadActual   3: 3 op, 678010800.00 ns, 226.0036 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 3 op, 521282700.00 ns, 173.7609 ms/op
+WorkloadResult   2: 3 op, 536091000.00 ns, 178.6970 ms/op
+WorkloadResult   3: 3 op, 678010800.00 ns, 226.0036 ms/op
+// GC:  0 0 0 4728 3
+// Threading:  24 4713 3
+
+// AfterAll
+// Benchmark Process 26816 has exited with code 0.
+
+Mean = 192.821 ms, StdErr = 16.653 ms (8.64%), N = 3, StdDev = 28.843 ms
+Min = 173.761 ms, Q1 = 176.229 ms, Median = 178.697 ms, Q3 = 202.350 ms, Max = 226.004 ms
+IQR = 26.121 ms, LowerFence = 137.047 ms, UpperFence = 241.532 ms
+ConfidenceInterval = [-333.387 ms; 719.028 ms] (CI 99.9%), Margin = 526.207 ms (272.90% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 2 (22,2 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 872 1492 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ConcurrentDictionary(Threads: 8)" --job ShortRun --benchmarkId 7 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 137900.00 ns, 137.9000 us/op
+WorkloadJitting  1: 1 op, 12454900.00 ns, 12.4549 ms/op
+
+OverheadJitting  2: 16 op, 222400.00 ns, 13.9000 us/op
+WorkloadJitting  2: 16 op, 66150700.00 ns, 4.1344 ms/op
+
+WorkloadPilot    1: 16 op, 64379100.00 ns, 4.0237 ms/op
+WorkloadPilot    2: 32 op, 133743300.00 ns, 4.1795 ms/op
+WorkloadPilot    3: 64 op, 215742900.00 ns, 3.3710 ms/op
+WorkloadPilot    4: 128 op, 411588700.00 ns, 3.2155 ms/op
+WorkloadPilot    5: 256 op, 827062400.00 ns, 3.2307 ms/op
+
+OverheadWarmup   1: 256 op, 2300.00 ns, 8.9844 ns/op
+OverheadWarmup   2: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadWarmup   3: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadWarmup   4: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadWarmup   5: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadWarmup   6: 256 op, 900.00 ns, 3.5156 ns/op
+
+OverheadActual   1: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   2: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   3: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   4: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   5: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   6: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   7: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual   8: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual   9: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  10: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  11: 256 op, 800.00 ns, 3.1250 ns/op
+OverheadActual  12: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  13: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  14: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadActual  15: 256 op, 1000.00 ns, 3.9063 ns/op
+OverheadActual  16: 256 op, 1100.00 ns, 4.2969 ns/op
+OverheadActual  17: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  18: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  19: 256 op, 900.00 ns, 3.5156 ns/op
+OverheadActual  20: 256 op, 1000.00 ns, 3.9063 ns/op
+
+WorkloadWarmup   1: 256 op, 820688800.00 ns, 3.2058 ms/op
+WorkloadWarmup   2: 256 op, 774713800.00 ns, 3.0262 ms/op
+WorkloadWarmup   3: 256 op, 772447500.00 ns, 3.0174 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 256 op, 775530900.00 ns, 3.0294 ms/op
+WorkloadActual   2: 256 op, 769953200.00 ns, 3.0076 ms/op
+WorkloadActual   3: 256 op, 778216800.00 ns, 3.0399 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 256 op, 775530000.00 ns, 3.0294 ms/op
+WorkloadResult   2: 256 op, 769952300.00 ns, 3.0076 ms/op
+WorkloadResult   3: 256 op, 778215900.00 ns, 3.0399 ms/op
+// GC:  0 0 0 403488 256
+// Threading:  2048 189 256
+
+// AfterAll
+// Benchmark Process 20980 has exited with code 0.
+
+Mean = 3.026 ms, StdErr = 0.010 ms (0.31%), N = 3, StdDev = 0.016 ms
+Min = 3.008 ms, Q1 = 3.019 ms, Median = 3.029 ms, Q3 = 3.035 ms, Max = 3.040 ms
+IQR = 0.016 ms, LowerFence = 2.994 ms, UpperFence = 3.059 ms
+ConfidenceInterval = [2.725 ms; 3.326 ms] (CI 99.9%), Margin = 0.300 ms (9.93% of Mean)
+Skewness = -0.22, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 1 (11,1 %) benchmark(s) to run. Estimated finish 2026-07-03 20:52 (0h 0m from now) **
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: Высокая производительность)
+// **************************
+// Benchmark: CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: dotnet TtlCache.Benchmarks-ShortRun-1.dll --anonymousPipes 1492 1588 --benchmarkName "TtlCache.Benchmarks.CacheBenchmarks.ReaderWriterLockSlim(Threads: 8)" --job ShortRun --benchmarkId 8 in C:\Users\v1nkore\OneDrive\Desktop\Рефреш\PetProjects\TtlCache\benchmarks\TtlCache.Benchmarks\bin\Release\net10.0\TtlCache.Benchmarks-ShortRun-1\bin\Release\net10.0
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// BenchmarkDotNet v0.15.8
+// Runtime=.NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+// GC=Concurrent Workstation
+// HardwareIntrinsics=AVX2+BMI1+BMI2+F16C+FMA+LZCNT+MOVBE,AVX,SSE3+SSSE3+SSE4.1+SSE4.2+POPCNT,X86Base+SSE+SSE2,AES+PCLMUL,AvxVnni,SERIALIZE VectorSize=256
+// Job: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3)
+
+OverheadJitting  1: 1 op, 141200.00 ns, 141.2000 us/op
+WorkloadJitting  1: 1 op, 97346600.00 ns, 97.3466 ms/op
+
+WorkloadPilot    1: 2 op, 323411400.00 ns, 161.7057 ms/op
+WorkloadPilot    2: 3 op, 431251200.00 ns, 143.7504 ms/op
+WorkloadPilot    3: 4 op, 334451500.00 ns, 83.6129 ms/op
+WorkloadPilot    4: 5 op, 401285800.00 ns, 80.2572 ms/op
+WorkloadPilot    5: 6 op, 502308100.00 ns, 83.7180 ms/op
+
+WorkloadWarmup   1: 6 op, 514599600.00 ns, 85.7666 ms/op
+WorkloadWarmup   2: 6 op, 500621100.00 ns, 83.4369 ms/op
+WorkloadWarmup   3: 6 op, 490816400.00 ns, 81.8027 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 6 op, 479730400.00 ns, 79.9551 ms/op
+WorkloadActual   2: 6 op, 505105200.00 ns, 84.1842 ms/op
+WorkloadActual   3: 6 op, 453400200.00 ns, 75.5667 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 6 op, 479730400.00 ns, 79.9551 ms/op
+WorkloadResult   2: 6 op, 505105200.00 ns, 84.1842 ms/op
+WorkloadResult   3: 6 op, 453400200.00 ns, 75.5667 ms/op
+// GC:  0 0 0 9456 6
+// Threading:  48 0 6
+
+// AfterAll
+// Benchmark Process 25044 has exited with code 0.
+
+Mean = 79.902 ms, StdErr = 2.488 ms (3.11%), N = 3, StdDev = 4.309 ms
+Min = 75.567 ms, Q1 = 77.761 ms, Median = 79.955 ms, Q3 = 82.070 ms, Max = 84.184 ms
+IQR = 4.309 ms, LowerFence = 71.298 ms, UpperFence = 88.533 ms
+ConfidenceInterval = [1.290 ms; 158.514 ms] (CI 99.9%), Margin = 78.612 ms (98.39% of Mean)
+Skewness = -0.01, Kurtosis = 0.67, MValue = 2
+
+// ** Remained 0 (0,0 %) benchmark(s) to run. Estimated finish 2026-07-03 20:51 (0h 0m from now) **
+Successfully reverted power plan (GUID: 381b4222-f694-41f0-9685-ff5bb260df2e FriendlyName: Сбалансированная)
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts\results\TtlCache.Benchmarks.CacheBenchmarks-report.csv
+  BenchmarkDotNet.Artifacts\results\TtlCache.Benchmarks.CacheBenchmarks-report-github.md
+  BenchmarkDotNet.Artifacts\results\TtlCache.Benchmarks.CacheBenchmarks-report.html
+
+// * Detailed results *
+CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 3.063 ms, StdErr = 0.015 ms (0.48%), N = 3, StdDev = 0.026 ms
+Min = 3.047 ms, Q1 = 3.048 ms, Median = 3.049 ms, Q3 = 3.071 ms, Max = 3.092 ms
+IQR = 0.023 ms, LowerFence = 3.014 ms, UpperFence = 3.105 ms
+ConfidenceInterval = [2.597 ms; 3.529 ms] (CI 99.9%), Margin = 0.466 ms (15.21% of Mean)
+Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[3.047 ms ; 3.093 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 810.002 μs, StdErr = 7.139 μs (0.88%), N = 3, StdDev = 12.364 μs
+Min = 796.644 μs, Q1 = 804.480 μs, Median = 812.316 μs, Q3 = 816.681 μs, Max = 821.045 μs
+IQR = 12.201 μs, LowerFence = 786.179 μs, UpperFence = 834.982 μs
+ConfidenceInterval = [584.431 μs; 1,035.572 μs] (CI 99.9%), Margin = 225.570 μs (27.85% of Mean)
+Skewness = -0.18, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[785.392 μs ; 805.429 μs) | @
+[805.429 μs ; 832.297 μs) | @@
+---------------------------------------------------
+
+CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=1]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 3.324 ms, StdErr = 0.176 ms (5.28%), N = 3, StdDev = 0.304 ms
+Min = 3.123 ms, Q1 = 3.149 ms, Median = 3.176 ms, Q3 = 3.425 ms, Max = 3.674 ms
+IQR = 0.275 ms, LowerFence = 2.736 ms, UpperFence = 3.838 ms
+ConfidenceInterval = [-2.222 ms; 8.870 ms] (CI 99.9%), Margin = 5.546 ms (166.84% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[3.122 ms ; 3.675 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 39.171 ms, StdErr = 0.847 ms (2.16%), N = 3, StdDev = 1.467 ms
+Min = 38.182 ms, Q1 = 38.328 ms, Median = 38.473 ms, Q3 = 39.665 ms, Max = 40.856 ms
+IQR = 1.337 ms, LowerFence = 36.322 ms, UpperFence = 41.670 ms
+ConfidenceInterval = [12.406 ms; 65.935 ms] (CI 99.9%), Margin = 26.764 ms (68.33% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[36.847 ms ; 39.663 ms) | @@
+[39.663 ms ; 42.191 ms) | @
+---------------------------------------------------
+
+CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 1.791 ms, StdErr = 0.007 ms (0.39%), N = 3, StdDev = 0.012 ms
+Min = 1.778 ms, Q1 = 1.786 ms, Median = 1.794 ms, Q3 = 1.797 ms, Max = 1.801 ms
+IQR = 0.012 ms, LowerFence = 1.768 ms, UpperFence = 1.815 ms
+ConfidenceInterval = [1.571 ms; 2.011 ms] (CI 99.9%), Margin = 0.220 ms (12.29% of Mean)
+Skewness = -0.22, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[1.767 ms ; 1.812 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=4]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 19.741 ms, StdErr = 1.507 ms (7.63%), N = 3, StdDev = 2.611 ms
+Min = 18.173 ms, Q1 = 18.234 ms, Median = 18.295 ms, Q3 = 20.525 ms, Max = 22.755 ms
+IQR = 2.291 ms, LowerFence = 14.798 ms, UpperFence = 23.961 ms
+ConfidenceInterval = [-27.885 ms; 67.367 ms] (CI 99.9%), Margin = 47.626 ms (241.25% of Mean)
+Skewness = 0.38, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[18.088 ms ; 22.840 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.LockDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 192.821 ms, StdErr = 16.653 ms (8.64%), N = 3, StdDev = 28.843 ms
+Min = 173.761 ms, Q1 = 176.229 ms, Median = 178.697 ms, Q3 = 202.350 ms, Max = 226.004 ms
+IQR = 26.121 ms, LowerFence = 137.047 ms, UpperFence = 241.532 ms
+ConfidenceInterval = [-333.387 ms; 719.028 ms] (CI 99.9%), Margin = 526.207 ms (272.90% of Mean)
+Skewness = 0.37, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[173.634 ms ; 226.131 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.ConcurrentDictionary: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 3.026 ms, StdErr = 0.010 ms (0.31%), N = 3, StdDev = 0.016 ms
+Min = 3.008 ms, Q1 = 3.019 ms, Median = 3.029 ms, Q3 = 3.035 ms, Max = 3.040 ms
+IQR = 0.016 ms, LowerFence = 2.994 ms, UpperFence = 3.059 ms
+ConfidenceInterval = [2.725 ms; 3.326 ms] (CI 99.9%), Margin = 0.300 ms (9.93% of Mean)
+Skewness = -0.22, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[3.004 ms ; 3.055 ms) | @@@
+---------------------------------------------------
+
+CacheBenchmarks.ReaderWriterLockSlim: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [Threads=8]
+Runtime = .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3; GC = Concurrent Workstation
+Mean = 79.902 ms, StdErr = 2.488 ms (3.11%), N = 3, StdDev = 4.309 ms
+Min = 75.567 ms, Q1 = 77.761 ms, Median = 79.955 ms, Q3 = 82.070 ms, Max = 84.184 ms
+IQR = 4.309 ms, LowerFence = 71.298 ms, UpperFence = 88.533 ms
+ConfidenceInterval = [1.290 ms; 158.514 ms] (CI 99.9%), Margin = 78.612 ms (98.39% of Mean)
+Skewness = -0.01, Kurtosis = 0.67, MValue = 2
+-------------------- Histogram --------------------
+[71.645 ms ; 78.148 ms) | @
+[78.148 ms ; 85.991 ms) | @@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.8737/25H2/2025Update/HudsonValley2)
+13th Gen Intel Core i5-13500H 2.60GHz, 1 CPU, 16 logical and 12 physical cores
+.NET SDK 10.0.300
+  [Host]   : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  ShortRun : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+
+Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+
+| Method               | Threads | Mean         | Error        | StdDev       | Ratio | RatioSD | Completed Work Items | Lock Contentions | Allocated | Alloc Ratio |
+|--------------------- |-------- |-------------:|-------------:|-------------:|------:|--------:|---------------------:|-----------------:|----------:|------------:|
+| LockDictionary       | 1       |   3,063.0 μs |     465.8 μs |     25.53 μs |  1.00 |    0.01 |                    - |                - |      24 B |        1.00 |
+| ConcurrentDictionary | 1       |     810.0 μs |     225.6 μs |     12.36 μs |  0.26 |    0.00 |                    - |                - |      24 B |        1.00 |
+| ReaderWriterLockSlim | 1       |   3,324.3 μs |   5,546.1 μs |    304.00 μs |  1.09 |    0.09 |                    - |                - |      24 B |        1.00 |
+|                      |         |              |              |              |       |         |                      |                  |           |             |
+| LockDictionary       | 4       |  39,170.5 μs |  26,764.2 μs |  1,467.04 μs |  1.00 |    0.05 |               4.0000 |          65.0000 |     872 B |        1.00 |
+| ConcurrentDictionary | 4       |   1,790.8 μs |     220.1 μs |     12.07 μs |  0.05 |    0.00 |               4.0000 |           0.1250 |     872 B |        1.00 |
+| ReaderWriterLockSlim | 4       |  19,741.1 μs |  47,626.3 μs |  2,610.56 μs |  0.50 |    0.06 |               4.0000 |                - |     872 B |        1.00 |
+|                      |         |              |              |              |       |         |                      |                  |           |             |
+| LockDictionary       | 8       | 192,820.5 μs | 526,207.2 μs | 28,843.19 μs |  1.01 |    0.18 |               8.0000 |        1571.0000 |    1576 B |        1.00 |
+| ConcurrentDictionary | 8       |   3,025.6 μs |     300.4 μs |     16.47 μs |  0.02 |    0.00 |               8.0000 |           0.7383 |    1576 B |        1.00 |
+| ReaderWriterLockSlim | 8       |  79,902.0 μs |  78,612.1 μs |  4,309.00 μs |  0.42 |    0.05 |               8.0000 |                - |    1576 B |        1.00 |
+
+// * Legends *
+  Threads              : Value of the 'Threads' parameter
+  Mean                 : Arithmetic mean of all measurements
+  Error                : Half of 99.9% confidence interval
+  StdDev               : Standard deviation of all measurements
+  Ratio                : Mean of the ratio distribution ([Current]/[Baseline])
+  RatioSD              : Standard deviation of the ratio distribution ([Current]/[Baseline])
+  Completed Work Items : The number of work items that have been processed in ThreadPool (per single operation)
+  Lock Contentions     : The number of times there was contention upon trying to take a Monitor's lock (per single operation)
+  Allocated            : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
+  Alloc Ratio          : Allocated memory ratio distribution ([Current]/[Baseline])
+  1 μs                 : 1 Microsecond (0.000001 sec)
+
+// * Diagnostic Output - ThreadingDiagnoser *
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:01:06 (66.05 sec), executed benchmarks: 9
+
+Global total time: 00:01:19 (79.57 sec), executed benchmarks: 9
+// * Artifacts cleanup *
+Artifacts cleanup is finished

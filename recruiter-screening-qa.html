@@ -1,0 +1,270 @@
+<meta charset="utf-8">
+<title>Скрининг рекрутера · Senior .NET — вопросы и заготовки</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+    --txt:#e6edf3; --muted:#9aa7b4; --accent:#6cb6ff; --accent2:#f0b429;
+    --good:#57d9a3; --bad:#ff7a7a;
+    --mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+    --sans:"Inter","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);
+    line-height:1.55;font-size:15px;padding:0 0 80px}
+  header{padding:28px 22px 18px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#12171f,#0e1116)}
+  header h1{margin:0 0 6px;font-size:22px;letter-spacing:.2px}
+  header p{margin:0;color:var(--muted);font-size:13.5px}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;
+    color:var(--accent);border:1px solid var(--line);border-radius:6px;
+    padding:2px 8px;margin-right:6px}
+  .wrap{max-width:860px;margin:0 auto;padding:22px}
+  .cat{margin:26px 0 10px;font-size:13px;text-transform:uppercase;
+    letter-spacing:1.4px;color:var(--accent2);font-family:var(--mono)}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    margin:10px 0;overflow:hidden}
+  details[open]{background:var(--panel2)}
+  summary{cursor:pointer;padding:14px 16px;font-weight:600;font-size:15px;
+    list-style:none;display:flex;gap:10px;align-items:flex-start}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";color:var(--accent);transition:.15s;margin-top:1px}
+  details[open] summary::before{transform:rotate(90deg)}
+  .body{padding:2px 18px 16px 40px}
+  .why{color:var(--muted);font-size:13.5px;margin:0 0 12px;
+    border-left:2px solid var(--line);padding-left:10px}
+  .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.5px;
+    color:var(--accent2);text-transform:uppercase;margin:14px 0 4px}
+  .script{background:#0b0f14;border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;font-size:14px;color:#dfe7ef}
+  ul{margin:6px 0 0;padding-left:18px}
+  li{margin:3px 0}
+  .num{font-family:var(--mono);color:var(--muted);font-size:12px}
+  .flag{color:var(--bad);font-weight:600}
+  .ok{color:var(--good);font-weight:600}
+  code{font-family:var(--mono);background:#0b0f14;padding:1px 5px;border-radius:4px;
+    font-size:12.5px;color:var(--accent)}
+  .note{background:#13202b;border:1px solid #234;border-radius:8px;padding:12px 14px;
+    font-size:13.5px;color:#bcd;margin:18px 0}
+  footer{max-width:860px;margin:30px auto 0;padding:0 22px;color:var(--muted);
+    font-size:12.5px}
+</style>
+
+<header>
+  <h1>Скрининг рекрутера · заготовки под Senior .NET</h1>
+  <p>Первичный HR-звонок (20–40 мин). Задача — пройти фильтр и договориться о технической стадии. Отвечай коротко, уверенно, цифрами.</p>
+  <div style="margin-top:12px">
+    <span class="tag">C#/ASP.NET Core</span><span class="tag">PostgreSQL·Redis·RabbitMQ</span><span class="tag">K8s·gRPC</span><span class="tag">платёжные системы</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="note">
+    <b>Общий принцип скрининга:</b> рекрутер не оценивает глубину техники — он проверяет адекватность, соответствие грейду/зарплате и мотивацию. Держи каждый ответ в 30–60 секунд, заканчивай позитивом, всегда имей 2–3 вопроса к нему. Формула достижений — <code>задача → что сделал → результат в цифрах</code>.
+  </div>
+
+  <div class="cat">1 · О себе и опыте</div>
+
+  <details open>
+    <summary>«Расскажите о себе / о вашем опыте»</summary>
+    <div class="body">
+      <p class="why">Самый частый первый вопрос. Проверяют, умеешь ли структурно и по делу подать себя за минуту. Не биография — а релевантный питч под вакансию.</p>
+      <div class="lbl">Структура (Present → Past → Future)</div>
+      <ul>
+        <li><b>Сейчас:</b> кто ты и на чём специализируешься</li>
+        <li><b>Опыт:</b> 2–3 ключевых достижения с цифрами</li>
+        <li><b>Куда:</b> почему смотришь на Senior .NET и на их вакансию</li>
+      </ul>
+      <div class="lbl">Заготовка</div>
+      <div class="script">
+        «Backend-разработчик на C# и ASP.NET Core. Специализируюсь на нагруженных сервисах и платёжной интеграции. На текущем месте переработал сервисы судебного взыскания — это дало компании дополнительно 1–2 млн рублей в неделю; реализовал переключение рекуррентных платежей, СБП и выплат между Tinkoff, Best2Pay и AlfaBank; автоматизировал отчётность для кредитных бюро. Работаю в микросервисной среде: PostgreSQL, Redis, RabbitMQ, Docker, Kubernetes, gRPC. Сейчас целюсь на Senior-роль, где смогу отвечать за архитектуру платёжного или высоконагруженного домена — поэтому и откликнулся к вам.»
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>«Расскажите про самый сложный проект / чем гордитесь»</summary>
+    <div class="body">
+      <p class="why">Проверяют реальность опыта и умение довести сложное до результата. Бери кейс с измеримым эффектом и техническим вызовом.</p>
+      <div class="lbl">Заготовка — платёжный роутинг</div>
+      <div class="script">
+        «Переключение платежей между провайдерами. Проблема: при сбое одного эквайера транзакции падали, а провайдеры несовместимы — разные форматы, статусы, коды ошибок. Я ввёл слой абстракции (единый интерфейс <code>IPaymentProvider</code> + трансляторы под каждого вендора — по сути anti-corruption layer), настроил переключение и ретраи с идемпотентностью. В итоге платежи стали отказоустойчивыми, а бизнес получил возможность гонять трафик к более выгодному эквайеру. Технически интересно было с согласованностью — рекуррентные платежи требовали аккуратной обработки повторов, чтобы не списать дважды.»
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>«С какими технологиями работали / ваш стек»</summary>
+    <div class="body">
+      <p class="why">Матчинг по ключевым словам вакансии. Называй уверенно то, что реально трогал; разделяй «core» и «знаком».</p>
+      <ul>
+        <li><b>Уверенно:</b> C#, ASP.NET Core, EF Core, PostgreSQL, Redis, RabbitMQ, Docker, xUnit, gRPC, CI/CD</li>
+        <li><b>В проде/эксплуатация:</b> Kubernetes, Prometheus/Grafana</li>
+        <li>Если спросят про незнакомое — <span class="ok">«вживую не работал, но понимаю концепцию и быстро подниму»</span>. Не блефуй — на технической стадии вскроется.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="cat">2 · Мотивация и переход</div>
+
+  <details>
+    <summary>«Почему уходите с текущего места?»</summary>
+    <div class="body">
+      <p class="why">Ключевой фильтр. Ищут красные флаги: конфликтность, выгорание, деньги как единственный мотив. <span class="flag">Никогда не ругай текущего работодателя.</span></p>
+      <div class="lbl">Заготовка</div>
+      <div class="script">
+        «На текущем месте я закрыл сильные задачи и вырос до потолка роли — платёжка, взыскание, отчётность уже отлажены. Хочу следующий уровень ответственности: архитектурные решения, влияние на технические стандарты команды, рост в Senior. Ищу место, где этот масштаб задач есть.»
+      </div>
+      <div class="lbl">Чего избегать</div>
+      <ul>
+        <li><span class="flag">«Мало платят»</span> как главная причина</li>
+        <li><span class="flag">«Плохой руководитель / бардак»</span> — сигнал конфликтности</li>
+        <li>Негатив о людях. Только «перерос роль» и «хочу расти».</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>«Почему именно наша компания / эта вакансия?»</summary>
+    <div class="body">
+      <p class="why">Проверяют, читал ли ты вакансию и не рассылаешь ли резюме веером. <b>Готовится под каждую компанию за 5 минут до звонка.</b></p>
+      <div class="lbl">Шаблон (подставляй факты о компании)</div>
+      <div class="script">
+        «Смотрел вашу вакансию и [продукт/домен]. Мне близко, что у вас [fintech / высокая нагрузка / микросервисы на .NET] — это ровно то, где мой опыт с платежами и нагруженными сервисами применим сразу. Плюс в описании роли есть [конкретный пункт: архитектура / gRPC / K8s], а это то, куда я хочу расти.»
+      </div>
+      <div class="note" style="margin-top:12px">Перед звонком выпиши: чем занимается компания, их стек из вакансии, 1 конкретную зацепку. Даже 2 факта резко выделяют на фоне «ищу интересные задачи».</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>«Кем видите себя через 1–2 года / планы роста»</summary>
+    <div class="body">
+      <p class="why">Оценивают вменяемость амбиций и не сбежишь ли через полгода. Senior-траектория, а не «хочу стать CTO завтра».</p>
+      <div class="script">
+        «Закрепиться в Senior: отвечать за архитектуру домена, менторить, влиять на технические решения команды. Дальше интересна роль ведущего/техлида, но через реальную экспертизу, а не просто по должности. В ближайший год — глубина в распределённых системах и производительности.»
+      </div>
+    </div>
+  </details>
+
+  <div class="cat">3 · Деньги и условия</div>
+
+  <details>
+    <summary>«Ваши зарплатные ожидания?»</summary>
+    <div class="body">
+      <p class="why">Главный фильтр скрининга — уложишься ли в их вилку. Называй <b>диапазон</b>, а не точку, и не занижай себя.</p>
+      <div class="lbl">Тактика</div>
+      <ul>
+        <li>Если знаешь вилку рынка/вакансии — назови верхнюю треть диапазоном: <code>«ожидаю X–Y на руки»</code>.</li>
+        <li>Попробуй сначала узнать их бюджет: <span class="ok">«А какая вилка заложена под эту роль? Чтобы понять, синхронизированы ли мы»</span>.</li>
+        <li>Привязывай к ценности: <code>«ориентируюсь на X, исходя из опыта с платёжкой и Senior-грейда»</code>.</li>
+        <li><span class="flag">Не называй одну цифру впритык</span> — потолок переговоров срежется.</li>
+      </ul>
+      <div class="note">Определи заранее 3 числа: <b>минимум</b> (ниже — нет смысла), <b>комфорт</b> (называешь его нижней границей), <b>амбиция</b> (верхняя граница вилки). Держи их в голове до звонка.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>«Формат работы, готовность к офису/гибриду, локация»</summary>
+    <div class="body">
+      <p class="why">Чистый матчинг. Отвечай прямо — расхождение тут всё равно всплывёт, лучше сразу.</p>
+      <ul>
+        <li>Заранее реши свои границы: удалёнка / гибрид / релокация — что реально готов.</li>
+        <li>Если гибко — скажи, это плюс: <span class="ok">«Готов к гибриду, детали обсудим»</span>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>«Когда готовы выйти? / Рассматриваете ли другие офферы?»</summary>
+    <div class="body">
+      <p class="why">Оценивают срочность и твою востребованность. Наличие других процессов — лёгкий рычаг, но без давления.</p>
+      <ul>
+        <li>Срок: честно про отработку (обычно 2 недели) — <code>«готов выйти через ~2 недели после оффера»</code>.</li>
+        <li>Другие офферы: <span class="ok">«Да, в процессе ещё несколько компаний»</span> — создаёт лёгкую срочность, но не блефуй с конкретикой.</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="cat">4 · Мини-техника на скрининге</div>
+
+  <details>
+    <summary>«Чем Senior отличается от Middle?»</summary>
+    <div class="body">
+      <p class="why">Проверяют, тянешь ли ты на грейд по самоощущению. Ответ про ответственность и автономию, не про годы.</p>
+      <div class="script">
+        «Middle решает поставленную задачу качественно. Senior отвечает за то, <b>какую</b> задачу решать: видит систему целиком, выбирает архитектуру с учётом trade-off'ов, думает о поддержке и стоимости решения, не тащит паттерны ради паттернов. Плюс влияет на команду — код-ревью, менторство, технические стандарты. Я к этому пришёл: например, слой переключения провайдеров — это было не "написать интеграцию", а решить, как домену вообще не зависеть от конкретного эквайера.»
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Лёгкие технические вопросы, которые задаёт даже не-технарь</summary>
+    <div class="body">
+      <p class="why">Рекрутер зачитывает по чеклисту. Ответ должен быть <b>коротким и по делу</b> — глубину прибереги для техстадии.</p>
+      <ul>
+        <li><b>ООП / SOLID</b> — назови принципы одной фразой каждый</li>
+        <li><b>async/await</b> — не блокируем поток на I/O, освобождаем его под другие запросы</li>
+        <li><b>REST vs gRPC</b> — gRPC: бинарный protobuf, HTTP/2, быстрее для внутренних сервисов</li>
+        <li><b>чем тестируешь</b> — xUnit, unit на домен без инфраструктуры, integration через Testcontainers</li>
+        <li><b>работа с БД</b> — EF Core + PostgreSQL, понимаю индексы, N+1, транзакции</li>
+        <li><b>очереди</b> — RabbitMQ: асинхронная обработка, outbox для надёжной доставки</li>
+      </ul>
+      <div class="note">Если вопрос глубже, чем ждёшь: <span class="ok">«Могу коротко здесь и подробно на технической секции — как удобнее?»</span> — показывает контроль над форматом.</div>
+    </div>
+  </details>
+
+  <div class="cat">5 · Вопросы работодателю (обязательно!)</div>
+
+  <details>
+    <summary>«У вас есть вопросы к нам?» — всегда «да»</summary>
+    <div class="body">
+      <p class="why"><span class="flag">«Нет вопросов» = слабая мотивация.</span> Держи 3–4 наготове. Хорошие вопросы = ты выбираешь их, а не только они тебя.</p>
+      <ul>
+        <li>Как устроена команда и процессы — Scrum/Kanban, размер, код-ревью?</li>
+        <li>Какой продукт/домен, какая нагрузка, какие технические вызовы сейчас?</li>
+        <li>Что отличает того, кто на этой роли будет успешен?</li>
+        <li>Как выглядят следующие этапы отбора и сроки?</li>
+        <li>Есть ли бюджет на обучение/конференции, как растут грейды?</li>
+      </ul>
+      <div class="note">Про деньги/отпуск на первом звонке — можно, но мягко и после содержательных вопросов, чтобы мотивация читалась как техническая, а не только денежная.</div>
+    </div>
+  </details>
+
+  <div class="cat">6 · Красные флаги — чего не делать</div>
+
+  <details>
+    <summary>Антипаттерны скрининга</summary>
+    <div class="body">
+      <ul>
+        <li><span class="flag">Ругать прошлых работодателей</span> — главный стоп-сигнал</li>
+        <li><span class="flag">Растекаться на 5 минут</span> — держи 30–60 сек, дай задать следующий вопрос</li>
+        <li><span class="flag">«Мне всё равно / что угодно интересно»</span> — читается как отсутствие мотивации</li>
+        <li><span class="flag">Блефовать по стеку</span> — вскроется на техстадии, убьёт доверие</li>
+        <li><span class="flag">Называть зарплату впритык одной цифрой</span> — теряешь переговорную вилку</li>
+        <li><span class="flag">Ноль вопросов к компании</span></li>
+        <li><span class="flag">Нервничать из-за пауз</span> — рекрутер часто печатает; спокойно жди</li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="cat">Чеклист за 5 минут до звонка</div>
+  <details open>
+    <summary>Быстрая шпаргалка перед стартом</summary>
+    <div class="body">
+      <ul>
+        <li>☐ Открыл вакансию, выписал: домен компании, их стек, 1 зацепку</li>
+        <li>☐ Держу в голове 3 зарплатных числа (минимум / комфорт / амбиция)</li>
+        <li>☐ Готов питч «о себе» на 45 секунд</li>
+        <li>☐ 2 достижения с цифрами наготове (взыскание +1–2 млн/нед, платёжный роутинг)</li>
+        <li>☐ 3 вопроса к компании</li>
+        <li>☐ Причина ухода — про рост, без негатива</li>
+        <li>☐ Тихое место, вода, резюме перед глазами</li>
+      </ul>
+    </div>
+  </details>
+
+</div>
+
+<footer>
+  Статичная шпаргалка · открывается двойным кликом · Senior .NET screening. Обновляй заготовки под каждую конкретную вакансию.
+</footer>

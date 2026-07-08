@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PerfLab · план изучения</title>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №11–12 · Производительность и highload</div>
+  <h1>PerfLab — план изучения</h1>
+  <div class="sub">Аллокации и Span · корректные бенчмарки · p95/p99 от RPS · thread pool starvation вживую — закрывает раздел 14 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок чтения (~1 вечер)</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Benchmarks/Program.cs</td><td>Две пары «до/после»: Split→Span и конкатенация→StringBuilder. Запусти с <code>--job short</code>, сверь свои цифры.</td></tr>
+  <tr><td>2</td><td class="file">LoadTest/Program.cs</td><td>Kestrel + NBomber в одном процессе; два эндпоинта, различающиеся ОДНОЙ строкой (await Task.Delay vs Thread.Sleep) — и семикратная разница в p99.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Аллокации важнее наносекунд.</b> Быстрый метод, сорящий в кучу, бьёт по ВСЕМУ процессу: Gen0 заполняется → сборки чаще → паузы у всех запросов. Поэтому <code>[MemoryDiagnoser]</code> обязателен, а колонка Allocated часто важнее Mean. В проекте: Span-парсинг дал 0 Б против 168 КБ — 1000 строк реестра без единого объекта в куче.</p>
+<p><b>Span&lt;T&gt; — окно, не копия.</b> <code>line.AsSpan().Slice(...)</code> — указатель + длина на стек, смотрит в исходную строку. BCL повсюду принимает <code>ReadOnlySpan&lt;char&gt;</code> (<code>decimal.Parse</code>, <code>int.Parse</code>...) — парсинг без подстрок. Ограничение: <code>ref struct</code>, живёт только на стеке — нельзя в поля класса и через await (для этого <code>Memory&lt;T&gt;</code>).</p>
+<p><b>Конкатенация — O(n²).</b> Каждая <code>+=</code> копирует всё накопленное: 500 строк = 6.2 МБ мусора. StringBuilder с заданной capacity — линейно и ×20 быстрее. Третий уровень — <code>string.Create</code>/пул буферов, когда и StringBuilder жалко.</p>
+<p><b>Правила честного замера:</b> только Release; warmup (JIT!); смотреть StdDev и медиану, не только Mean (среднее тащат выбросы — потому в нагрузке смотрят перцентили); не сравнивать разные условия (см. испорченный замер в GrpcLab); малые разницы на short-прогоне — шум.</p>
+<p><b>Thread pool starvation — главный урок LoadTest.</b> Блокирующий вызов держит поток весь I/O: на 400 RPS × 50 мс нужно 20 потоков одновременно, а пул выше минимума (= числу ядер) доращивает по ~1–2 потока в секунду. Заявки копятся в очереди пула → p99 растёт при почти нулевом CPU — фирменный симптом: «сервис тормозит, а процессор спит». Async-версия отдаёт поток на время ожидания — кривая плоская. Диагностика в проде: <code>dotnet-counters monitor</code> → ThreadPool Queue Length, Thread Count.</p>
+</div>
+<div class="tip"><b>Перцентили, не среднее:</b> p50 «типичный пользователь», p95/p99 — хвост, который и есть твой SLO. Среднее между 62 мс и 476 мс не значит ничего. На собесе «как мерил производительность» — отвечать перцентилями от RPS, как в таблице README.</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 14:</b> как найти bottleneck (CPU vs I/O vs пул: счётчики, симптомы); Span/Memory и их ограничения; поколения GC, LOH, цена аллокаций; корректный бенчмарк; p50/p95/p99 и SLO; thread pool starvation — причины (sync-over-async, блокирующий I/O), симптомы, лечение; как нагрузочно тестировать (профили нагрузки, точка деградации).</div>
+<div class="q"><b>Связки:</b> lock contention под нагрузкой — уже замерено в TtlCache (1571 contention); дорогая (де)сериализация — в GrpcLab; N+1 как убийца латентности — в EfCoreLab.</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>Поднять rate до 800–1000 на /blocking — поймать секунды и таймауты; потом <code>ThreadPool.SetMinThreads</code> и посмотреть, как «лечится» (и почему это костыль)</td><td>полная картина starvation</td></tr>
+  <tr><td>Учебная утечка (статический список, подписка на событие без отписки) → снять снапшоты dotMemory/dotnet-gcdump, найти корень</td><td>чек-лист п.11: поиск утечек</td></tr>
+  <tr><td>ArrayPool&lt;byte&gt; для буферов + string.Create — третий уровень оптимизации отчёта</td><td>пулинг</td></tr>
+  <tr><td>Нагрузить реальный сервис (AspNetLab/OrderFlow) вместо стенда, найти ЕГО точку деградации</td><td>чек-лист п.12 целиком</td></tr>
+</table>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AspNetLab · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+h3{font-size:16.5px; margin:26px 0 8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+nav.toc{margin:0 0 8px; padding:18px 20px; background:var(--card); border:1px solid var(--line); border-radius:12px}
+nav.toc b{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+nav.toc ol{margin:10px 0 0; padding-left:22px}
+nav.toc a{color:var(--ink); text-decoration:none}
+nav.toc a:hover{color:var(--accent)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №5 · ASP.NET Core под капотом</div>
+  <h1>AspNetLab — план изучения</h1>
+  <div class="sub">Middleware · фильтры · DI lifetimes · BackgroundService · Options · ProblemDetails — закрывает раздел 3 из «200 ответов»</div>
+</header>
+
+<nav class="toc">
+  <b>Маршрут</b>
+  <ol>
+    <li><a href="#domain">Предметная область</a></li>
+    <li><a href="#route">Порядок чтения кода (~1 вечер)</a></li>
+    <li><a href="#pipeline">Pipeline: как запрос проходит сквозь приложение</a></li>
+    <li><a href="#di">DI lifetimes и captive dependency — главная тема проекта</a></li>
+    <li><a href="#worker">BackgroundService и очередь</a></li>
+    <li><a href="#bugs">Два реальных бага из этого проекта</a></li>
+    <li><a href="#interview">Мостик к вопросам собеса</a></li>
+    <li><a href="#scale">Куда масштабировать</a></li>
+  </ol>
+</nav>
+
+<h2 id="domain"><span class="n">1</span>Предметная область</h2>
+<p>Сервис нотификаций: <code>POST /notifications</code> принимает сообщение, кладёт во внутреннюю очередь и мгновенно отвечает <code>202 Accepted</code> со ссылкой на статус; фоновый воркер отправляет. Это классический паттерн <b>«принял — подтвердил — обработал позже»</b>: HTTP-запрос не должен ждать медленный SMTP/SMS-шлюз.</p>
+<p>Домен нарочно крошечный. Смысл проекта — не нотификации, а то, <i>из чего сделан любой сервис на ASP.NET Core</i>: конвейер обработки запроса, контейнер зависимостей и фоновая работа. На собесе спрашивают именно эти три вещи.</p>
+
+<h2 id="route"><span class="n">2</span>Порядок чтения кода</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Program.cs</td><td>Точка сборки всего: регистрации DI (и их lifetimes), порядок middleware, <code>ValidateOnBuild</code>, флаг <code>BreakDi</code>. Это «оглавление» приложения — читается сверху вниз как конфигурация конвейера.</td></tr>
+  <tr><td>2</td><td class="file">Middleware/CorrelationIdMiddleware.cs</td><td>Convention-based middleware: ctor(RequestDelegate, DI…) + InvokeAsync. Заголовок → log scope. Почему нельзя хранить состояние запроса в полях.</td></tr>
+  <tr><td>3</td><td class="file">Middleware/RequestTimingMiddleware.cs</td><td><code>Stopwatch.GetTimestamp</code> без аллокаций, лог в <code>finally</code>.</td></tr>
+  <tr><td>4</td><td class="file">Filters/ValidateRecipientAttribute.cs</td><td>Чем фильтр отличается от middleware (уже есть типизированные аргументы action'а) и как <code>context.Result</code> коротко замыкает выполнение.</td></tr>
+  <tr><td>5</td><td class="file">Controllers/NotificationsController.cs</td><td>202 + Location вместо 200 — семантика асинхронной обработки.</td></tr>
+  <tr><td>6</td><td class="file">Notifications/NotificationQueue.cs</td><td>Bounded Channel: зачем backpressure и что не так с Unbounded.</td></tr>
+  <tr><td>7</td><td class="file">Notifications/NotificationDispatcher.cs</td><td><b>Сердце проекта.</b> BackgroundService + scope на единицу работы + почему исключение из ExecuteAsync гасит весь хост.</td></tr>
+  <tr><td>8</td><td class="file">DiTraps/CaptiveTrap.cs</td><td>Ловушка. Запусти <code>dotnet run --project src/AspNetLab.Api -- --BreakDi=true</code> и прочитай текст ошибки.</td></tr>
+  <tr><td>9</td><td class="file">tests/ApiTests.cs</td><td>WebApplicationFactory: приложение целиком in-memory; тест на captive dependency ловит падение хоста.</td></tr>
+</table>
+
+<h2 id="pipeline"><span class="n">3</span>Pipeline: как запрос проходит сквозь приложение</h2>
+<pre><code>запрос
+  → ExceptionHandler      (ловит всё, что вылетит ниже → ProblemDetails 500)
+  → StatusCodePages       (голым 4xx/5xx без тела дописывает ProblemDetails)
+  → CorrelationId         (заголовок + log scope — до всех логов ниже)
+  → RequestTiming         (замер: всё, что ниже, попадает в тайминг)
+  → Routing → [фильтры MVC: биндинг → валидация → action-фильтры] → Action
+ответ ← тем же путём обратно (у middleware есть «до next» и «после next»)</code></pre>
+<p><b>Порядок — это семантика.</b> ExceptionHandler первым, потому что ловит только то, что зарегистрировано <i>после</i> него. CorrelationId раньше таймингов, чтобы лог тайминга уже был в scope с id. Поменяй местами — и логи потеряют correlation id, а падение middleware выше обработчика уронит соединение без ProblemDetails.</p>
+<div class="tip"><b>Middleware vs фильтр — когда что:</b> middleware видит сырой HTTP и работает для ВСЕХ запросов (авторизация, логирование, сжатие). Фильтр живёт внутри MVC: после маршрутизации и биндинга, видит типизированные аргументы action'а, знает, какой контроллер вызывается. Валидация «Recipient соответствует Channel» требует распарсенную модель → это фильтр. Correlation id нужен всем, включая 404 до MVC → это middleware.</div>
+<p><b>ProblemDetails (RFC 9457)</b> — стандартный формат тела ошибки. <code>AddProblemDetails</code> + <code>CustomizeProblemDetails</code> дописывает <code>correlationId</code> в каждую ошибку: саппорт по нему находит логи конкретного запроса. Валидационные 400 от <code>[ApiController]</code> — это тоже ProblemDetails (<code>ValidationProblemDetails</code>).</p>
+
+<h2 id="di"><span class="n">4</span>DI lifetimes и captive dependency</h2>
+<table>
+  <tr><th>Lifetime</th><th>Живёт</th><th>Типичное</th></tr>
+  <tr><td><b>Singleton</b></td><td>всё приложение</td><td>кэш, очередь, HttpClient-фабрика, конфиг</td></tr>
+  <tr><td><b>Scoped</b></td><td>один HTTP-запрос (или созданный вручную scope)</td><td>DbContext, UnitOfWork, текущий пользователь</td></tr>
+  <tr><td><b>Transient</b></td><td>каждый Resolve — новый</td><td>лёгкие stateless-хелперы</td></tr>
+</table>
+<p><b>Captive dependency</b> — singleton, получивший scoped в конструктор. Scoped-инстанс «пленён» навсегда: для DbContext это один контекст на все запросы сразу — гонки (DbContext не потокобезопасен), распухший change tracker, <code>ObjectDisposedException</code> в случайных местах. Худшее — это <i>не падает сразу</i>, а стреляет под нагрузкой.</p>
+<pre><code>// Program.cs — поэтому включено ВСЕГДА, не только в Development:
+builder.Host.UseDefaultServiceProvider(o => {
+    o.ValidateScopes = true;   // ловит resolve scoped вне scope в рантайме
+    o.ValidateOnBuild = true;  // ловит captive dependency прямо на Build()
+});</code></pre>
+<p>Запусти <code>dotnet run --project src/AspNetLab.Api -- --BreakDi=true</code> — приложение упадёт на старте с текстом <code>Cannot consume scoped service 'INotificationSender' from singleton 'CaptiveTrap'</code>. Тест <code>CaptiveDependencyTests</code> проверяет ровно это.</p>
+<div class="warn"><b>Нюанс, который любят на собесах:</b> по умолчанию обе проверки включены только в Development. В проде контейнер молча отдаст singleton'у scoped-инстанс — и никто не узнает до первого инцидента. Включение навсегда стоит копейки: проверка выполняется один раз на старте.</div>
+
+<h2 id="worker"><span class="n">5</span>BackgroundService и очередь</h2>
+<h3>Bounded Channel вместо самодельной очереди</h3>
+<p><code>System.Threading.Channels</code> — стандартный producer/consumer: вместо <code>lock + Queue + Monitor.Pulse</code>. Ключевой выбор — <b>bounded</b> (ёмкость 100, <code>FullMode.Wait</code>): при заполнении продюсер ждёт — это backpressure. Unbounded «никогда не тормозит» — пока не съест всю память при отстающем консьюмере.</p>
+<h3>Scope на единицу работы</h3>
+<p>У воркера-singleton нет HTTP-запроса, значит нет и request scope. Правильный паттерн — «scope на сообщение», зеркало того, что ASP.NET Core делает для каждого запроса:</p>
+<pre><code>await using var scope = scopeFactory.CreateAsyncScope();
+var sender = scope.ServiceProvider.GetRequiredService&lt;INotificationSender&gt;();
+await sender.SendAsync(item, stoppingToken);</code></pre>
+<p>Сравни с <code>CaptiveTrap</code>: это два ответа на один вопрос «как singleton'у пользоваться scoped-сервисом» — неправильный (в конструктор) и правильный (scope на работу).</p>
+<div class="tip"><b>Смертельный нюанс BackgroundService:</b> с .NET 6 необработанное исключение из <code>ExecuteAsync</code> останавливает ВЕСЬ хост (<code>BackgroundServiceExceptionBehavior.StopHost</code> по умолчанию). Одно упавшее сообщение без try/catch внутри цикла = мёртвый сервис. Поэтому в цикле: catch на сообщение → лог → статус Failed → едем дальше; отдельный catch на <code>OperationCanceledException</code> для штатной остановки.</div>
+<p><b>IHostedService vs BackgroundService:</b> первый — интерфейс StartAsync/StopAsync, где сам следишь за задачей и токеном; второй — базовый класс, дающий готовый каркас с одним <code>ExecuteAsync(stoppingToken)</code>. Для «вечного цикла» — всегда BackgroundService.</p>
+<h3>Options pattern</h3>
+<p><code>AddOptions&lt;T&gt;().BindConfiguration(...).ValidateDataAnnotations().ValidateOnStart()</code> — секция конфига становится типизированным объектом, а кривое значение валит приложение <b>на старте</b> с внятным сообщением, а не при первом использовании в 3 часа ночи. Три интерфейса доступа: <code>IOptions&lt;T&gt;</code> (singleton, снимок на старте), <code>IOptionsSnapshot&lt;T&gt;</code> (scoped, перечитывается на запрос), <code>IOptionsMonitor&lt;T&gt;</code> (singleton + событие изменения).</p>
+
+<h2 id="bugs"><span class="n">6</span>Два реальных бага из этого проекта</h2>
+<div class="card">
+<p><b>Баг №1 — <code>[property: Required]</code> на позиционном record.</b> Атрибут ушёл на сгенерированное свойство, а MVC требует его на параметре конструктора — и бросил <code>InvalidOperationException</code> в рантайме при первом POST (оба эндпоинта отвечали 500). Правильно: <code>[Required] string Recipient</code> без target'а. Мораль: у позиционных record'ов атрибут по умолчанию применяется к <i>параметру</i>, и MVC валидирует именно параметры.</p>
+<p><b>Баг №2 — настройки JSON как часть контракта.</b> Включили <code>JsonStringEnumConverter</code> на сервере (enum'ы строками — читаемый контракт, не ломается при перестановке членов), и тест перестал парсить ответ: его <code>GetFromJsonAsync</code> использовал дефолтные настройки без конвертера. Клиент и сервер должны сериализовать по одним правилам — в реале это решают общим пакетом контрактов или генерацией клиента из OpenAPI.</p>
+</div>
+
+<h2 id="interview"><span class="n">7</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Pipeline:</b> порядок middleware и что сломается при перестановке; middleware vs фильтры; как работает short-circuit; зачем ProblemDetails; куда положить обработку ошибок.</div>
+<div class="q"><b>DI:</b> три lifetime'а и типичные ошибки; captive dependency — что это, чем опасна, как ловить (ValidateOnBuild/ValidateScopes) и как правильно (scope на работу); почему DbContext scoped, а HttpClient — через IHttpClientFactory.</div>
+<div class="q"><b>Фоновая работа:</b> IHostedService vs BackgroundService; исключение в ExecuteAsync гасит хост; graceful shutdown через stoppingToken; очередь между HTTP и воркером — Channels, bounded vs unbounded, backpressure.</div>
+<div class="q"><b>Options:</b> IOptions vs IOptionsSnapshot vs IOptionsMonitor; валидация конфига на старте.</div>
+<div class="q"><b>Тестирование:</b> WebApplicationFactory — интеграционный тест без сокетов; partial class Program для top-level statements.</div>
+
+<h2 id="scale"><span class="n">8</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td><b>Retry с экспоненциальным backoff</b> при падении отправки + Failed → повторная очередь</td><td>мост к Polly (проект OrderFlow)</td></tr>
+  <tr><td><b>Заменить in-memory очередь на Kafka</b> — и увидеть, что паттерн «принял → 202 → воркер» не изменился, изменился транспорт</td><td>мост к проекту №2</td></tr>
+  <tr><td><b>Rate limiting</b> (<code>AddRateLimiter</code>, .NET 7+): token bucket на POST</td><td>раздел system design</td></tr>
+  <tr><td><b>Свой <code>IExceptionHandler</code></b> (.NET 8+) вместо дефолтного — маппинг доменных исключений на статусы</td><td>тонкости обработки ошибок</td></tr>
+  <tr><td><b>Health-чеки:</b> <code>AddHealthChecks</code> + отдельная проверка «очередь не переполнена»</td><td>мост к k8s liveness/readiness (проект №9)</td></tr>
+  <tr><td><b>Минимальные API рядом:</b> продублировать POST как minimal endpoint c endpoint filter — почувствовать разницу подходов</td><td>актуальный тренд, частый вопрос «controllers vs minimal APIs»</td></tr>
+</table>
+
+<p class="sub" style="margin-top:40px">Следующий по порядку тем: <b>EfCoreLab (№6)</b> — N+1, change tracking, optimistic concurrency, индексы.</p>
+
+</div>
+</body>
+</html>

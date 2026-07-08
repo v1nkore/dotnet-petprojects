@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Открывает internal-члены тестовому проекту: тестируем RemoveExpired напрямую,
+         не делая его частью публичного API -->
+    <InternalsVisibleTo Include="TtlCache.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OrderFlow.Bank/OrderFlow.Bank.csproj" />
+    <Project Path="src/OrderFlow.Orders/OrderFlow.Orders.csproj" />
+    <Project Path="src/OrderFlow.Payments/OrderFlow.Payments.csproj" />
+    <Project Path="src/OrderFlow.Shared/OrderFlow.Shared.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OrderFlow · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+h3{font-size:16.5px; margin:26px 0 8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+nav.toc{margin:0 0 8px; padding:18px 20px; background:var(--card); border:1px solid var(--line); border-radius:12px}
+nav.toc b{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+nav.toc ol{margin:10px 0 0; padding-left:22px}
+nav.toc a{color:var(--ink); text-decoration:none}
+nav.toc a:hover{color:var(--accent)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проекты №2+№3 · Kafka · Outbox · Saga · Polly</div>
+  <h1>OrderFlow — план изучения</h1>
+  <div class="sub">Два сервиса, брокер и нестабильный внешний мир — закрывает разделы 8–9 из «200 ответов»: микросервисы и очереди сообщений</div>
+</header>
+
+<nav class="toc">
+  <b>Маршрут</b>
+  <ol>
+    <li><a href="#domain">Предметная область и общая картина</a></li>
+    <li><a href="#route">Порядок чтения кода (~2–3 вечера)</a></li>
+    <li><a href="#outbox">Outbox: обе половины</a></li>
+    <li><a href="#idem">Идемпотентность: почему без неё нельзя</a></li>
+    <li><a href="#saga">Saga-хореография и компенсация</a></li>
+    <li><a href="#kafka">Kafka-механика: партиции, offset'ы, консьюмер</a></li>
+    <li><a href="#polly">Polly: анатомия pipeline</a></li>
+    <li><a href="#interview">Мостик к вопросам собеса</a></li>
+    <li><a href="#scale">Куда масштабировать</a></li>
+  </ol>
+</nav>
+
+<h2 id="domain"><span class="n">1</span>Предметная область и общая картина</h2>
+<pre><code>клиент ──POST /orders──▶ [Orders :5300] ──OrderCreated──▶ [Payments] ──POST /charge──▶ [Bank :5301 💥]
+                             ▲                                 │
+                             └────── PaymentSucceeded / PaymentFailed ──────┘
+
+  Pending ──оплата прошла──▶ Completed
+  Pending ──оплата НЕ прошла──▶ Cancelled   ← компенсирующая транзакция</code></pre>
+<p>Это минимальная честная распределённая система: <b>две базы, брокер, ненадёжная сеть</b>. Одной ACID-транзакцией «создать заказ и списать деньги» здесь не сделать — и весь проект о том, какими паттернами это компенсируется: Outbox, идемпотентность, сага, ретраи с circuit breaker'ом.</p>
+<p>«Банк» намеренно ужасен (35% пятисоток, зависания, лимиты) — это модель реального внешнего API. Всё, что делает Payments, продиктовано его ненадёжностью.</p>
+
+<h2 id="route"><span class="n">2</span>Порядок чтения кода</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">README.md → запуск</td><td>Сначала прогони сагу руками: заказ на 100 и на 7000, следи за логами трёх сервисов. Увидишь ретраи вживую.</td></tr>
+  <tr><td>2</td><td class="file">Shared/Contracts/Events.cs</td><td>События, конверт с MessageId, почему ключ Kafka = OrderId.</td></tr>
+  <tr><td>3</td><td class="file">Orders/Program.cs</td><td>POST /orders: заказ + outbox-строка одним SaveChanges. Это ядро Outbox — одна строка кода, вся суть.</td></tr>
+  <tr><td>4</td><td class="file">Shared/Outbox/OutboxEntities.cs + OutboxPublisher.cs</td><td>Вторая половина: воркер-публикатор, частичный индекс, окно at-least-once.</td></tr>
+  <tr><td>5</td><td class="file">Shared/Kafka/KafkaConsumerService.cs</td><td>Каркас консьюмера: выделенный поток, ручной коммит, Close().</td></tr>
+  <tr><td>6</td><td class="file">Payments/OrderEventsConsumer.cs</td><td><b>Сердце проекта.</b> Идемпотентность до эффектов, вызов банка, исход в outbox — всё в одной транзакции.</td></tr>
+  <tr><td>7</td><td class="file">Payments/Program.cs</td><td>Polly-pipeline: читай комментарий про порядок стратегий.</td></tr>
+  <tr><td>8</td><td class="file">Orders/Consumers/PaymentEventsConsumer.cs</td><td>Замыкание саги: Completed / Cancelled-компенсация.</td></tr>
+  <tr><td>9</td><td class="file">Bank/Program.cs</td><td>Чем «transient 500» отличается от «бизнес-402» — и почему это разные ветки в Payments.</td></tr>
+</table>
+
+<h2 id="outbox"><span class="n">3</span>Outbox: обе половины</h2>
+<p><b>Проблема (dual write):</b> сохранить заказ в свою БД и отправить событие в Kafka — два разных хранилища, общей транзакции нет. Порядок «сначала БД, потом Produce» теряет событие при падении между ними; «сначала Produce» — создаёт событие о заказе, которого нет.</p>
+<p><b>Решение:</b> событие пишется в таблицу <code>OutboxMessage</code> <i>той же транзакцией</i>, что бизнес-данные (в EF — просто два Add и один SaveChanges). Отдельный воркер (<code>OutboxPublisher&lt;TContext&gt;</code>) опрашивает таблицу, публикует, помечает <code>PublishedAtUtc</code>.</p>
+<div class="warn"><b>Цена:</b> если воркер упал <i>между</i> ProduceAsync и SaveChanges — после рестарта сообщение уйдёт повторно. Outbox даёт <b>at-least-once</b>, и это не баг, а осознанный размен: потерять нельзя, задублировать можно. Дубликаты лечатся на приёмнике — раздел 4.</div>
+<p>Детали в коде: частичный индекс <code>WHERE "PublishedAtUtc" IS NULL</code> (воркер сканирует только хвост), SaveChanges на каждое сообщение (окно повтора — одно сообщение, не батч), продюсер с <code>Acks.All</code> + <code>EnableIdempotence</code> (брокер дедуплицирует ретраи самого продюсера).</p>
+
+<h2 id="idem"><span class="n">4</span>Идемпотентность: почему без неё нельзя</h2>
+<p>At-least-once означает: дубликаты — вопрос «когда», а не «если». Для платежей повторная обработка = <b>повторное списание</b>. Схема защиты (см. <code>OrderEventsConsumer</code>):</p>
+<pre><code>1. пришло сообщение (MessageId в конверте)
+2. SELECT из ProcessedMessage: уже есть? → молча выходим
+3. бизнес-эффект (списание)          ┐
+4. INSERT в ProcessedMessage         ├─ ОДНА транзакция БД
+5. INSERT исхода в свой Outbox       ┘
+6. commit offset'а Kafka</code></pre>
+<p>Упали после шага 5, но до 6? Kafka передоставит, шаг 2 отсечёт дубль. Упали после 3, но до 4? Транзакция не закоммичена — эффекта нет, обработаем заново с нуля. Ключевой инвариант: <b>эффект и отметка «обработано» атомарны</b>.</p>
+
+<h2 id="saga"><span class="n">5</span>Saga-хореография и компенсация</h2>
+<p>Сага — последовательность локальных транзакций, где каждая публикует событие, запускающее следующую. Здесь — <b>хореография</b>: нет центрального мозга, сервисы просто реагируют на события друг друга. Альтернатива — <b>оркестрация</b>: отдельный компонент (state machine, например MassTransit Saga) явно командует шагами.</p>
+<table>
+  <tr><th></th><th>Хореография</th><th>Оркестрация</th></tr>
+  <tr><td>Связанность</td><td>ниже — сервисы знают только события</td><td>оркестратор знает всех</td></tr>
+  <tr><td>Видимость процесса</td><td>размазана по логам сервисов</td><td>в одном месте, легко дебажить</td></tr>
+  <tr><td>Когда</td><td>2–3 шага, простые компенсации</td><td>длинные процессы, ветвления, таймауты шагов</td></tr>
+</table>
+<p><b>Компенсация ≠ rollback.</b> Откатить чужую БД нельзя — можно только применить новое действие, гасящее бизнес-эффект: заказ не «исчезает», а переходит в Cancelled. Отсюда важное следствие — <b>eventual consistency</b>: между OrderCreated и Cancelled наблюдатель видит Pending-заказ, который «как будто есть». Система обязана уметь жить в этом окне.</p>
+
+<h2 id="kafka"><span class="n">6</span>Kafka-механика: партиции, offset'ы, консьюмер</h2>
+<ul>
+  <li><b>Партиция — единица порядка и параллелизма.</b> Порядок гарантирован только внутри партиции. Ключ сообщения хэшируется в номер партиции → ключ = OrderId означает «события одного заказа строго по порядку». Без ключа PaymentSucceeded мог бы обогнать OrderCreated.</li>
+  <li><b>Consumer group:</b> партиции топика делятся между консьюмерами группы; два сервиса с разными group.id читают один топик независимо (у каждой группы свои offset'ы). Rebalance — перераздача партиций при входе/выходе участника; <code>Close()</code> в коде — мгновенный выход из группы вместо ожидания session timeout.</li>
+  <li><b>Offset — курсор группы в партиции.</b> <code>EnableAutoCommit=false</code> + ручной <code>Commit</code> после обработки = at-least-once. Auto-commit по таймеру может закоммитить то, что ещё не обработано = at-most-once (потеря при падении).</li>
+  <li><b>Consume() — блокирующий вызов</b>, поэтому цикл живёт на выделенном потоке (<code>TaskCreationOptions.LongRunning</code>), а не отбирает поток у пула. Там же — редкий легальный случай sync-over-async: нет SynchronizationContext → deadlock невозможен.</li>
+</ul>
+<div class="tip"><b>Kafka vs RabbitMQ (краткий ответ для собеса):</b> Kafka — распределённый лог: сообщения не удаляются при чтении (retention), группы читают независимо, возможен replay с любого offset'а; сила — throughput, порядок, event sourcing, несколько независимых потребителей одного потока. RabbitMQ — умный брокер с очередями: сложная маршрутизация (exchanges), per-message ack, TTL/приоритеты; сила — классические задачи «очередь работ». Здесь нужна история событий и независимые потребители → Kafka.</div>
+
+<h2 id="polly"><span class="n">7</span>Polly: анатомия pipeline</h2>
+<pre><code>builder.Services.AddHttpClient&lt;BankClient&gt;(...)
+    .AddResilienceHandler("bank", pipeline =&gt; {
+        pipeline.AddTimeout(10s);          // 1. потолок ВСЕЙ операции
+        pipeline.AddRetry(4, exp, jitter); // 2. ретраи transient-ошибок
+        pipeline.AddCircuitBreaker(...);   // 3. перестать добивать лежащего
+        pipeline.AddTimeout(1s);           // 4. потолок ОДНОЙ попытки
+    });</code></pre>
+<p>Стратегии — луковица, выполняются сверху вниз; порядок = семантика. Attempt-timeout внутри retry — иначе одна зависшая попытка съест весь бюджет. Circuit breaker между ними: считает результаты попыток и при 90% отказов за окно размыкается — быстрые отказы вместо мучения банка (и своих потоков).</p>
+<ul>
+  <li><b>Jitter обязателен:</b> без него сто инстансов ретраят синхронно — retry storm добивает восстанавливающийся сервис.</li>
+  <li><b>Что ретраить:</b> 5xx, таймауты, сетевые ошибки. <b>Что нельзя:</b> 4xx-бизнес-отказы (402 «лимит» детерминирован — в коде это отдельная ветка <code>BankChargeResult.Declined</code> → сразу компенсация).</li>
+  <li>Реальный лог прогона — в README: два 500 → ретраи → OK; зависание → attempt timeout → OK; 402 → без ретраев → Cancelled.</li>
+</ul>
+<div class="warn"><b>Тонкость:</b> устойчивость навешана на HttpClient снаружи (<code>AddResilienceHandler</code> = DelegatingHandler), сам <code>BankClient</code> о ней не знает. Retry на боевом POST безопасен только если внешняя система идемпотентна (реальный банк принимал бы idempotency key) — у нас «банк» stateless, поэтому честно.</div>
+
+<h2 id="interview"><span class="n">8</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Kafka:</b> партиции/offset/consumer group; гарантии доставки (at-most/at-least/exactly-once и почему «exactly-once» — это на самом деле идемпотентность приёмника); ключ партиционирования и порядок; rebalance; auto-commit vs ручной; Kafka vs RabbitMQ.</div>
+<div class="q"><b>Микросервисы:</b> dual write и Outbox; идемпотентный консьюмер (инвариант «эффект + отметка атомарны»); saga: хореография vs оркестрация; компенсация vs rollback; eventual consistency и что она значит для UI/бизнеса.</div>
+<div class="q"><b>Устойчивость:</b> retry/backoff/jitter; circuit breaker (зачем, параметры, half-open); timeout total vs per-attempt; порядок стратегий; что нельзя ретраить; retry storm.</div>
+<div class="q"><b>Бонус:</b> почему consumer в выделенном потоке; когда sync-over-async легален; graceful shutdown консьюмера (Close vs Dispose).</div>
+
+<h2 id="scale"><span class="n">9</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td><b>Dead-letter topic:</b> сообщение, падающее N раз, — в <code>orders.events.dlq</code> + алерт. Сейчас учебное упрощение — «банк недоступен» завершает сагу отказом</td><td>обработка ядовитых сообщений — частый вопрос</td></tr>
+  <tr><td><b>Второй инстанс Payments:</b> запусти два процесса, посмотри rebalance в логах и распределение партиций (создай топик с 3+ партициями)</td><td>горизонтальное масштабирование консьюмеров</td></tr>
+  <tr><td><b>Наблюдаемость (проект №8):</b> OpenTelemetry, trace id сквозь HTTP и Kafka-заголовки, сквозной трейс в Jaeger</td><td>ровно следующий пункт твоего чек-листа</td></tr>
+  <tr><td><b>Таймаут саги:</b> заказ, висящий в Pending дольше N минут (Payments умер) → воркер-«сторож» отменяет. Это шаг к оркестрации</td><td>отказоустойчивость саг</td></tr>
+  <tr><td><b>Идемпотентность банка:</b> передавать idempotency key в /charge и дедуплицировать на стороне банка — как делают Stripe/реальные PSP</td><td>честные платежи</td></tr>
+  <tr><td><b>Схемы контрактов:</b> заменить JSON-конверт на Schema Registry + Avro/Protobuf, поиграть с эволюцией схемы</td><td>версионирование событий</td></tr>
+</table>
+
+<p class="sub" style="margin-top:40px">Дальше по плану: система прогонов написана — осталось №4 (system design, письменный) и остальное по чек-листу. Конспект «что понял» — 5–10 строк после каждого раздела.</p>
+
+</div>
+</body>
+</html>

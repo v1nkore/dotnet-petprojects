@@ -1,0 +1,9 @@
+# Prometheus работает по PULL-модели: сам ходит за метриками к сервисам.
+# Orders отдаёт их на GET /metrics (MapPrometheusScrapingEndpoint).
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: orders
+    static_configs:
+      - targets: ["host.docker.internal:5300"]

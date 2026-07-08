@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrpcLab · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №7 · gRPC</div>
+  <h1>GrpcLab — план изучения</h1>
+  <div class="sub">protobuf · unary и streaming · deadline · interceptor · честный замер против REST — закрывает раздел 10 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок чтения (~1 вечер)</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">Server/Protos/debts.proto</td><td>Контракт — источник правды. Комментарии о правилах эволюции (номера полей!), UNSPECIFIED-ноль в enum, деньги как int64 minor units.</td></tr>
+  <tr><td>2</td><td class="file">Server/Program.cs</td><td>Kestrel с двумя портами: gRPC требует HTTP/2 (h2c локально), REST рядом на HTTP/1.1.</td></tr>
+  <tr><td>3</td><td class="file">Server/Services/DebtsService.cs</td><td>Наследование от сгенерированной базы; RpcException + StatusCode; streaming с уважением к CancellationToken.</td></tr>
+  <tr><td>4</td><td class="file">Server/Services/LoggingInterceptor.cs</td><td>Interceptor = middleware для gRPC. Логирует только медленное — почему, читай «пойманный нюанс».</td></tr>
+  <tr><td>5</td><td class="file">Client/Program.cs</td><td>Канал (один на приложение!), замер p50/p95/p99, streaming, deadline. Запусти и посмотри цифры на своей машине.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Контракт-first.</b> Из одного <code>.proto</code> генерируются сервер и клиент (<code>GrpcServices="Server"/"Client"</code> в csproj). Совместимость держится на <b>номерах полей</b>: имя можно менять, номер — никогда; удалённые номера — <code>reserved</code>. Новые поля старый клиент молча игнорирует — так контракты эволюционируют без синхронного деплоя.</p>
+<p><b>Deadline ≠ timeout.</b> Клиентский timeout — «я перестал ждать», сервер продолжает молотить. Deadline едет с запросом (заголовок <code>grpc-timeout</code>) и отменяет <code>context.CancellationToken</code> на сервере: работа прекращается на обеих сторонах. В цепочке сервисов deadline пробрасывается дальше — весь граф вызовов уважает бюджет времени исходного запроса.</p>
+<p><b>Статусы вместо HTTP-кодов.</b> <code>InvalidArgument</code>, <code>NotFound</code>, <code>Unavailable</code> (ретраибельный), <code>DeadlineExceeded</code>. Клиент матчит <code>RpcException.StatusCode</code>, а не парсит тело.</p>
+<p><b>Канал — один на приложение.</b> <code>GrpcChannel</code> — аналог HttpClient: внутри одно HTTP/2-соединение, все вызовы мультиплексируются. Канал на вызов = утечка соединений, тот же антипаттерн, что new HttpClient() в цикле.</p>
+</div>
+
+<h2><span class="n">3</span>Главный результат: REST оказался быстрее</h2>
+<table>
+  <tr><th></th><th>p50</th><th>p95</th><th>p99</th></tr>
+  <tr><td>gRPC (protobuf/HTTP2)</td><td>0.283 мс</td><td>0.373 мс</td><td>0.507 мс</td></tr>
+  <tr><td>REST (JSON/HTTP1.1)</td><td><b>0.184 мс</b></td><td><b>0.265 мс</b></td><td><b>0.356 мс</b></td></tr>
+</table>
+<p>Для профиля «крошечное сообщение + loopback + последовательные вызовы» это корректный результат: цена HTTP/2-фрейминга фиксирована, экономия protobuf на 5 полях ничтожна, мультиплексирование в последовательном цикле бесполезно. gRPC выигрывает при: больших payload'ах (protobuf в разы компактнее JSON), реальной сети (одно соединение), <b>параллельных</b> вызовах (HTTP/1.1 блокирует соединение на запрос), стриминге.</p>
+<div class="warn"><b>Пойманный нюанс — нечестный бенчмарк:</b> в первом замере interceptor логировал каждый из 2000 gRPC-вызовов, а REST-эндпоинт не логировал ничего — gRPC выглядел ещё хуже. Мораль двойная: (1) проверяй, что сравниваешь одинаковые условия; (2) лог на горячем пути — сам источник латентности, логируй медленное и ошибки, а не всё подряд.</div>
+<div class="tip"><b>Когда что (краткий ответ):</b> gRPC — межсервисное общение внутри периметра (контракты, скорость, стриминг, deadline propagation); REST — публичные API (браузеры, curl-простота, кэширование на HTTP-уровне). gRPC-Web/JSON transcoding — мосты, когда нужно и то и то.</div>
+
+<h2><span class="n">4</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 10:</b> protobuf и почему бинарный формат + схема; эволюция контрактов (номера полей, reserved); 4 типа вызовов (unary, server/client/bidirectional streaming); deadline vs timeout и propagation; status codes; gRPC vs REST — когда что (с цифрами своего замера!); почему gRPC требует HTTP/2; interceptors; как гонять decimal/деньги.</div>
+
+<h2><span class="n">5</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>Замер с payload побольше (список из 1000 платежей) и параллельными вызовами — увидеть, где gRPC начинает выигрывать</td><td>завершение истории про профиль нагрузки</td></tr>
+  <tr><td>Client streaming + bidirectional (чат/загрузка пачками)</td><td>оставшиеся 2 типа вызовов</td></tr>
+  <tr><td>gRPC health checks + retry policy в канале (<code>ServiceConfig</code>)</td><td>продовая эксплуатация</td></tr>
+  <tr><td>JSON transcoding (<code>Microsoft.AspNetCore.Grpc.JsonTranscoding</code>) — REST-фасад над gRPC-сервисом из того же .proto</td><td>модный вопрос «как отдать gRPC наружу»</td></tr>
+  <tr><td>Контрактные тесты: сломай совместимость (смени номер поля) и поймай тестом</td><td>мост к проекту №10 (тестирование)</td></tr>
+</table>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# .NET build output
+bin/
+obj/
+.vs/
+*.user
+[Tt]est[Rr]esults/
+
+# Claude Code local config
+.claude/

@@ -1,0 +1,78 @@
+# Deployment: декларация «хочу N реплик такого пода» — контроллер сам
+# доводит реальность до желаемого (умер под → поднимет новый).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetlab
+  labels: { app: aspnetlab }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: aspnetlab }
+  template:
+    metadata:
+      labels: { app: aspnetlab }
+    spec:
+      containers:
+        - name: api
+          image: aspnetlab:0.1
+          imagePullPolicy: Never   # образ загружен в kind напрямую (kind load), не из registry
+          ports:
+            - containerPort: 8080
+          # Конфиг через env: двойное подчёркивание = вложенность секций .NET-конфига
+          envFrom:
+            - configMapRef: { name: aspnetlab-config }
+          # requests — для планировщика (сколько резервировать),
+          # limits — потолок: CPU троттлится, память → OOMKilled
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          # liveness: «жив ли процесс» — провал = рестарт контейнера
+          livenessProbe:
+            httpGet: { path: /health, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # readiness: «готов ли принимать трафик» — провал = под убирают
+          # из эндпоинтов Service, но НЕ рестартуют (например, прогрев кэша)
+          readinessProbe:
+            httpGet: { path: /health, port: 8080 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aspnetlab-config
+data:
+  Dispatcher__SendDelayMilliseconds: "100"
+---
+# Service: стабильный виртуальный IP + DNS-имя над эфемерными подами.
+# ClusterIP — доступ внутри кластера; наружу — port-forward/Ingress/LoadBalancer.
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetlab
+spec:
+  selector: { app: aspnetlab }
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+# HPA: автомасштабирование по метрикам. Требует metrics-server
+# (в kind не установлен по умолчанию — манифест как документация).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: aspnetlab
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: aspnetlab
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PerfLab.Benchmarks/PerfLab.Benchmarks.csproj" />
+    <Project Path="src/PerfLab.LoadTest/PerfLab.LoadTest.csproj" />
+  </Folder>
+</Solution>

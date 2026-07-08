@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CleanLab.Api/CleanLab.Api.csproj" />
+    <Project Path="src/CleanLab.Application/CleanLab.Application.csproj" />
+    <Project Path="src/CleanLab.Domain/CleanLab.Domain.csproj" />
+    <Project Path="src/CleanLab.Infrastructure/CleanLab.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CleanLab.Tests/CleanLab.Tests.csproj" />
+  </Folder>
+</Solution>

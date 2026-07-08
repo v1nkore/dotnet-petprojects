@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K8sLab · план изучения</title>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №9 · Kubernetes + CI/CD</div>
+  <h1>K8sLab — план изучения</h1>
+  <div class="sub">kind · Deployment, probes, limits · rolling update и откат · Helm · пайплайн — закрывает раздел 12 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок изучения (~2 вечера)</h2>
+<table>
+  <tr><th>Шаг</th><th>Что</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">../AspNetLab/Dockerfile + .dockerignore</td><td>Multi-stage, кэш слоёв (restore отдельно от кода), non-root. Баг с хостовым obj/.</td></tr>
+  <tr><td>2</td><td class="file">k8s/deployment.yaml</td><td>Прочитай ВСЕ комментарии — там ответы на пол-раздела: probes, requests/limits, ConfigMap→env.</td></tr>
+  <tr><td>3</td><td>Пересоздай кластер и задеплой (команды в README)</td><td>Прогони демо отката руками: set image на битый тег → посмотри, что трафик жив → undo.</td></tr>
+  <tr><td>4</td><td class="file">chart/</td><td>Как манифесты становятся шаблонами; values; аннотация checksum/config.</td></tr>
+  <tr><td>5</td><td class="file">github-actions-ci.yml</td><td>Цепочка стадий, теги = SHA, helm --wait как автоматический health-гейт деплоя.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Декларативность.</b> Ты не приказываешь «запусти контейнер», а описываешь желаемое состояние (2 реплики, такой образ, такие пробы) — контроллеры непрерывно доводят реальность до декларации. Умер под — поднимется сам; это не фича деплоя, а свойство модели.</p>
+<p><b>Иерархия объектов:</b> Pod (эфемерный, свой IP) ← ReplicaSet (держит N копий) ← Deployment (управляет ReplicaSet'ами при обновлениях — поэтому откат это «переключиться на старый ReplicaSet», мгновенно). Service — стабильное имя + балансировка над меняющимися подами.</p>
+<p><b>Rolling update, увиденный руками:</b> новый под с битым образом завис в ErrImageNeverPull, а старые реплики продолжали отвечать — k8s не убивает работающее, пока новое не пройдёт readiness. maxSurge/maxUnavailable управляют темпом.</p>
+<p><b>Helm = пакетный менеджер + шаблонизатор + история релизов.</b> Чарт — манифесты с дырками под values; релиз — установленный чарт с ревизиями (<code>helm rollback</code>). Жемчужина чарта: <code>checksum/config</code> — хэш ConfigMap'а в аннотации пода, чтобы смена конфига перекатывала поды (иначе живут со старым до случайного рестарта).</p>
+<p><b>CI/CD-цепочка:</b> тесты гейтят сборку образа, образ тегируется SHA коммита, деплой через <code>helm upgrade --wait</code> — если поды не прошли probes, шаг падает и есть что откатывать. Environment protection — ручное подтверждение на прод.</p>
+</div>
+<div class="warn"><b>Диагностика OOMKilled (частый вопрос):</b> <code>kubectl describe pod</code> → Last State: Terminated, Reason: OOMKilled, exit code 137. Причины: лимит ниже реального потребления, утечка, или .NET до контейнерных лимитов не знал о cgroup (сейчас знает: Server GC считает память от лимита). Лечение: поднять limits / чинить утечку (см. PerfLab) / проверить <code>DOTNET_GCHeapHardLimit</code>.</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 12:</b> Pod/ReplicaSet/Deployment/Service и зачем каждый; liveness vs readiness (+startup probe); requests vs limits, троттлинг vs OOMKilled; ConfigMap/Secret; стратегии деплоя (rolling/blue-green/canary) и как откатывать; HPA и metrics-server; Helm: чарт/релиз/values, зачем поверх kubectl; docker multi-stage и слои; что должно быть в CI перед деплоем.</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>metrics-server в kind + нагрузка из PerfLab → увидеть HPA-скейлинг вживую</td><td>автомасштабирование</td></tr>
+  <tr><td>Ingress (nginx) вместо port-forward + два сервиса за одним хостом</td><td>маршрутизация трафика</td></tr>
+  <tr><td>Задеплоить OrderFlow целиком: 3 сервиса + Kafka/Postgres через Helm-зависимости (bitnami)</td><td>многокомпонентный релиз</td></tr>
+  <tr><td>Уронить под под нагрузкой (kubectl delete pod) и посмотреть, теряются ли запросы; добавить preStop + graceful shutdown</td><td>zero-downtime по-настоящему</td></tr>
+</table>
+
+</div>
+</body>
+</html>

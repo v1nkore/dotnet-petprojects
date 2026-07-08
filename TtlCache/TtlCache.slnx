@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/TtlCache.Benchmarks/TtlCache.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TtlCache.Core/TtlCache.Core.csproj" />
+    <Project Path="src/TtlCache.Demo/TtlCache.Demo.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TtlCache.Tests/TtlCache.Tests.csproj" />
+  </Folder>
+</Solution>

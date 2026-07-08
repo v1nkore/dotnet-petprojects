@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TtlCache · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+h3{font-size:16.5px; margin:26px 0 8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.5}
+pre code{background:none; padding:0}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+nav.toc{margin:0 0 8px; padding:18px 20px; background:var(--card); border:1px solid var(--line); border-radius:12px}
+nav.toc b{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+nav.toc ol{margin:10px 0 0; padding-left:22px}
+nav.toc a{color:var(--ink); text-decoration:none}
+nav.toc a:hover{color:var(--accent)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.tip{border-left:4px solid var(--accent); padding:10px 16px; background:var(--accent-soft); border-radius:0 10px 10px 0; margin:14px 0}
+.tip b:first-child{color:var(--accent-deep)}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+kbd{border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:1px 6px; font-size:12px; background:var(--card)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №1 · C#/.NET внутренности и многопоточность</div>
+  <h1>TtlCache — план изучения</h1>
+  <div class="sub">Потокобезопасный in-memory кэш с TTL и фоновой очисткой · закрывает разделы 1–2 из «200 ответов»: <b>C# и .NET runtime</b>, <b>Async и многопоточность</b></div>
+</header>
+
+<nav class="toc">
+  <b>Маршрут</b>
+  <ol>
+    <li><a href="#domain">Предметная область: зачем это вообще</a></li>
+    <li><a href="#route">Порядок чтения кода (~1 вечер)</a></li>
+    <li><a href="#decisions">Разбор ключевых решений</a></li>
+    <li><a href="#lang">Языковые фишки по версиям</a></li>
+    <li><a href="#bench">Бенчмарк: что показывает и как читать</a></li>
+    <li><a href="#interview">Мостик к вопросам собеса</a></li>
+    <li><a href="#scale">Куда масштабировать</a></li>
+  </ol>
+</nav>
+
+<h2 id="domain"><span class="n">1</span>Предметная область</h2>
+<p>In-memory кэш — самый частый инфраструктурный компонент бэкенда: до всякого Redis почти в каждом сервисе есть кэш прямо в памяти процесса — конфиги, справочники, права, токены, результаты дорогих запросов. Проект решает две его фундаментальные проблемы:</p>
+<div class="card">
+<p><b>1. Конкурентный доступ.</b> Кэш дёргают десятки потоков одновременно. Обычный <code>Dictionary</code> при параллельной записи ломается непредсказуемо: порча внутренних бакетов, зависший в бесконечном цикле поток, <code>IndexOutOfRangeException</code>. Нужна синхронизация — и вариантов несколько, с сильно разной ценой (это и меряет бенчмарк).</p>
+<p><b>2. Устаревание и память.</b> Закэшированное протухает — пользователь сменил имя, а кэш отдаёт старое. И кэш без вытеснения = утечка памяти с отложенным <code>OutOfMemoryException</code>. Отсюда TTL + двухступенчатая уборка: ленивая при чтении и фоновая для того, что никто не читает.</p>
+</div>
+<p>Почему не просто взять готовое? В проде — взять (<code>IMemoryCache</code>, <code>HybridCache</code> в .NET 9+). Смысл проекта — понять, <i>что у них внутри</i> и почему они устроены именно так. На собесе спрашивают ровно это.</p>
+
+<h2 id="route"><span class="n">2</span>Порядок чтения кода</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">src/TtlCache.Demo/Program.cs</td><td>Сначала — поведение снаружи: запусти <code>dotnet run --project src/TtlCache.Demo -c Release</code> и посмотри жизненный цикл записи: hit → протухание → miss → GetOrAdd → фоновый свипер.</td></tr>
+  <tr><td>2</td><td class="file">src/TtlCache.Core/TtlCache.cs</td><td>Ядро, ~150 строк. Читай сверху вниз: поля → конструктор → <code>CacheEntry</code> → <code>TryGet</code> → <code>GetOrAdd</code> → <code>CleanupLoopAsync</code>. Каждое неочевидное место прокомментировано «почему».</td></tr>
+  <tr><td>3</td><td class="file">tests/TtlCache.Tests/TtlCacheTests.cs</td><td>Как тестируют время: <code>FakeTimeProvider.Advance()</code> вместо <code>Task.Delay</code>. 11 тестов пробегают за 142 мс — с реальными задержками это были бы минуты и флаки.</td></tr>
+  <tr><td>4</td><td class="file">benchmarks/.../Caches.cs</td><td>Три стратегии синхронизации над одним словарём. XML-комментарии объясняют, чем каждая платит за потокобезопасность.</td></tr>
+  <tr><td>5</td><td class="file">benchmarks/.../CacheBenchmarks.cs</td><td>Как устроен честный конкурентный бенчмарк: смешанная нагрузка 90/10, xorshift вместо Random, <code>[Params]</code> по потокам.</td></tr>
+</table>
+
+<h2 id="decisions"><span class="n">3</span>Разбор ключевых решений</h2>
+
+<h3>ConcurrentDictionary как хранилище</h3>
+<p>Чтение в нём вообще без блокировок — volatile-чтение ссылки на бакет. Запись — lock striping: словарь держит массив локов, пишущие потоки на разных ключах почти не сталкиваются. Профиль кэша — read-heavy, поэтому это оптимальный выбор (бенчмарк это подтверждает цифрами).</p>
+
+<h3>readonly record struct CacheEntry</h3>
+<p>Запись кэша — <code>readonly record struct (TValue, long, TimeSpan)</code>. Три выгоды:</p>
+<ul>
+  <li><b>struct</b> → лежит по значению прямо в словаре, ноль дополнительных объектов в куче на запись, меньше давление на GC (раздел 1: struct vs class);</li>
+  <li><b>readonly</b> → иммутабельность, безопасно читать из многих потоков без синхронизации;</li>
+  <li><b>record</b> → бесплатное равенство по значению, которое используется в атомарном <code>TryRemove(KeyValuePair)</code> ниже.</li>
+</ul>
+
+<h3>Монотонное время: GetTimestamp, а не DateTime.UtcNow</h3>
+<p>Храним не «момент смерти», а пару «когда положили + сколько жить», где «когда» — <code>TimeProvider.GetTimestamp()</code> (обёртка над <code>Stopwatch</code>). Системные часы могут прыгнуть (NTP-синхронизация, ручной перевод) — тогда кэш на <code>DateTime.UtcNow</code> разом «протухнет» весь или наоборот оживит мёртвое. Монотонные часы идут только вперёд.</p>
+
+<h3>TimeProvider — время как зависимость</h3>
+<p>Абстракция времени из .NET 8. В проде — <code>TimeProvider.System</code>, в тестах — <code>FakeTimeProvider</code>, у которого часы проматываются вручную. Это то же самое DI-мышление, что и с <code>IClock</code>, только теперь стандартное в BCL: и <code>PeriodicTimer</code>, и <code>Task.Delay</code> умеют работать от него.</p>
+
+<h3>Двухступенчатая инвалидация</h3>
+<p><b>Ленивая:</b> <code>TryGet</code>, наткнувшись на протухшую запись, сам её удаляет. Дёшево, но не спасает от ключей, которые больше никто не читает. <b>Активная:</b> фоновый свипер раз в интервал проходит по словарю. Так же устроен Redis (lazy + active expiration) — готовый ответ на вопрос «как Redis удаляет протухшие ключи».</p>
+
+<div class="tip"><b>Тонкое место №1:</b> ленивое удаление делается через <code>TryRemove(KeyValuePair.Create(key, entry))</code>, а не <code>TryRemove(key)</code>. Между «увидел протухшую запись» и «удалил» другой поток мог записать в этот ключ свежие данные — перегрузка с парой атомарно удаляет «ключ + именно то значение» и не тронет чужую свежую запись. Классическая гонка check-then-act и её решение.</div>
+
+<h3>PeriodicTimer + Task.Run для свипера</h3>
+<p>Почему не <code>System.Timers.Timer</code>: тот стреляет по расписанию независимо от того, закончился ли предыдущий тик — очистки могут наложиться. <code>PeriodicTimer.WaitForNextTickAsync()</code> — pull-модель: следующий тик берётся только когда обработан предыдущий. Плюс он принимает <code>TimeProvider</code> → свипер тестируем без реального ожидания.</p>
+
+<div class="tip"><b>Тонкое место №2 (реальный баг из этого проекта):</b> сначала таймер создавался внутри <code>Task.Run</code>, и тест флаковал: <code>FakeTimeProvider.Advance()</code> успевал выполниться <i>до</i> того, как таймер зарегистрировался в провайдере — тик не наступал никогда. Лечение: создавать таймер синхронно в конструкторе. Мораль: код «до первого await» и код «после» выполняются в разное время и, возможно, в разных потоках.</div>
+
+<h3>Interlocked для hits/misses</h3>
+<p><code>_hits++</code> — это три операции (прочитать, увеличить, записать), два потока теряют друг друга обновления. <code>Interlocked.Increment</code> — одна атомарная CPU-инструкция (<code>lock xadd</code>), без блокировок. Чтение — <code>Interlocked.Read</code>, потому что на 32-битных платформах чтение <code>long</code> не атомарно (torn read). Прямой ответ на «зачем Interlocked, если есть lock».</p>
+
+<h3>ConfigureAwait(false) в CleanupLoopAsync</h3>
+<p>Библиотечный код не должен возвращаться в захваченный контекст вызывающего — ему всё равно, на каком потоке продолжаться, а вызывающему это может стоить deadlock'а (классика: <code>.Result</code> на UI/старом ASP.NET). Правило: в библиотеках — везде <code>ConfigureAwait(false)</code>, в приложениях на ASP.NET Core — не важно (контекста нет).</p>
+
+<h3>GetOrAdd и честность про stampede</h3>
+<p>При одновременном промахе двух потоков на одном ключе фабрика выполнится дважды, выигрывает последняя запись — ровно так же ведёт себя <code>ConcurrentDictionary.GetOrAdd</code> (фабрика вызывается вне лока!). Для дешёвых фабрик это норм. Защита дорогих — <code>Lazy&lt;T&gt;</code> внутри словаря или <code>SemaphoreSlim</code> на ключ — тема проекта №13 (Redis, cache stampede).</p>
+
+<h2 id="lang"><span class="n">4</span>Языковые фишки по версиям</h2>
+<table>
+  <tr><th>Фишка</th><th>Версия</th><th>Где в проекте</th></tr>
+  <tr><td><code>System.Threading.Lock</code> — выделенный тип для <code>lock</code>; компилятор генерирует <code>EnterScope</code> вместо <code>Monitor.Enter</code>, быстрее и типобезопаснее <code>lock(new object())</code></td><td>C# 13 / .NET 9</td><td><span class="file">Caches.cs → LockDictionaryCache</span></td></tr>
+  <tr><td><code>readonly record struct</code> — иммутабельная структура с равенством по значению</td><td>C# 10</td><td><span class="file">TtlCache.cs → CacheEntry, CacheStats</span></td></tr>
+  <tr><td>Collection expressions: <code>= []</code> вместо <code>= new Dictionary&lt;,&gt;()</code></td><td>C# 12</td><td><span class="file">Caches.cs</span></td></tr>
+  <tr><td><code>TimeProvider</code> / <code>FakeTimeProvider</code> — стандартная абстракция времени</td><td>.NET 8</td><td>ядро + все тесты</td></tr>
+  <tr><td><code>PeriodicTimer</code> с поддержкой <code>TimeProvider</code></td><td>.NET 6 / 8</td><td><span class="file">TtlCache.cs → CleanupLoopAsync</span></td></tr>
+  <tr><td>Guard-хелперы: <code>ArgumentOutOfRangeException.ThrowIfLessThanOrEqual</code>, <code>ObjectDisposedException.ThrowIf</code> — валидация одной строкой, JIT лучше инлайнит</td><td>.NET 7–8</td><td>конструктор, <code>Set</code></td></tr>
+  <tr><td><code>[MaybeNullWhen(false)]</code> — контракт nullability для Try-паттерна: компилятор знает, что при <code>true</code> out-параметр не null</td><td>C# 8+</td><td><code>TryGet</code></td></tr>
+  <tr><td>Деконструкция record: <code>var (hits, misses) = cache.Stats</code></td><td>C# 10</td><td><span class="file">Demo/Program.cs</span></td></tr>
+  <tr><td><code>InternalsVisibleTo</code> как MSBuild-item (без AssemblyInfo.cs)</td><td>SDK 5+</td><td><span class="file">TtlCache.Core.csproj</span></td></tr>
+  <tr><td>Формат решения <code>.slnx</code> — XML вместо легаси .sln</td><td>SDK 9+</td><td><span class="file">TtlCache.slnx</span></td></tr>
+</table>
+
+<h2 id="bench"><span class="n">5</span>Бенчмарк: что показывает и как читать</h2>
+<pre><code>dotnet run --project benchmarks/TtlCache.Benchmarks -c Release -- --job short   # ~3 мин
+dotnet run --project benchmarks/TtlCache.Benchmarks -c Release                  # полный, ~15 мин</code></pre>
+<p>Нагрузка: N потоков × 200 000 операций, 90% чтений / 10% записей по 1024 ключам. Реальные цифры с этой машины (i5-13500H, .NET 10, short-run):</p>
+<table>
+  <tr><th>Метод</th><th>1 поток</th><th>4 потока</th><th>8 потоков</th><th>Contentions (8)</th></tr>
+  <tr><td><code>lock</code> + Dictionary</td><td>3.06 ms</td><td>39.2 ms</td><td>192.8 ms</td><td>1571</td></tr>
+  <tr><td><code>ConcurrentDictionary</code></td><td><b>0.81 ms</b></td><td><b>1.79 ms</b></td><td><b>3.03 ms</b></td><td>~1</td></tr>
+  <tr><td><code>ReaderWriterLockSlim</code></td><td>3.32 ms</td><td>19.7 ms</td><td>79.9 ms</td><td>0</td></tr>
+</table>
+<ul>
+  <li><b>Сюрприз №1:</b> ConcurrentDictionary быстрее даже на <i>одном</i> потоке (3.8×). Интуиция «без конкуренции lock бесплатен» не подтвердилась: лок-фри volatile-чтение дешевле даже незахваченного Monitor, который на каждой из 200 000 операций делает interlocked-вход и выход.</li>
+  <li><b>8 потоков — разрыв 64×.</b> У <code>lock</code> все потоки сериализуются в очередь на одном мониторе: 1571 contention — потоки реально паркуются в ядре ОС. У ConcurrentDictionary — меньше одного contention на весь прогон.</li>
+  <li><b>Сюрприз №2 — ReaderWriterLockSlim:</b> «много читателей параллельно» звучит идеально для кэша, и он правда в 2.4× лучше <code>lock</code> под конкуренцией (contentions = 0). Но всё равно в 26 раз хуже ConcurrentDictionary: на операциях по ~15 нс цена входа/выхода read-lock'а больше самой работы. RWLS окупается на <i>длинных</i> чтениях (десятки микросекунд+). Готовая история для собеса: «мы предполагали X, замерили — оказалось Y».</li>
+  <li><b>Allocated ≈ 0 на операцию</b> — доступ к словарю не аллоцирует; байты в таблице — это Task'и на запуск потоков.</li>
+</ul>
+<div class="warn"><b>Правила честного замера:</b> только Release (в Debug JIT не оптимизирует); ноутбук в сеть; смотреть не только Mean, но и StdDev/Median; не верить разнице в единицы процентов на short-прогоне.</div>
+
+<h2 id="interview"><span class="n">6</span>Мостик к вопросам собеса</h2>
+<p>Формулировки, к которым проект даёт готовую историю «делал руками»:</p>
+<div class="q"><b>Раздел 1 · runtime:</b> struct vs class и где живут; что даёт readonly struct; boxing и как его избежать; поколения GC и почему короткоживущие записи кэша — это нагрузка на Gen0; зачем record.</div>
+<div class="q"><b>Раздел 2 · многопоточность:</b> чем ConcurrentDictionary лучше lock+Dictionary и когда наоборот; почему RWLS часто медленнее Monitor; Interlocked vs lock vs volatile; check-then-act гонки и атомарные операции «сравнить-и-удалить»; async state machine и код до/после первого await; ConfigureAwait(false); зачем CancellationToken в фоновых циклах; PeriodicTimer vs Timer.</div>
+<div class="q"><b>Бонус — тестирование:</b> «как тестировать код, завязанный на время?» — TimeProvider/FakeTimeProvider, тесты TTL за миллисекунды без флаков.</div>
+
+<h2 id="scale"><span class="n">7</span>Куда масштабировать</h2>
+<p>Каждый пункт — вечер работы и +1 тема в копилку:</p>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td><b>Ограничение размера + LRU/LFU-вытеснение.</b> Кэш без лимита — бомба. LRU поверх ConcurrentDictionary нетривиален (нужен потокобезопасный порядок использования) — посмотри, как это решает <code>BitFaster.Caching</code></td><td>алгоритмы вытеснения, ещё многопоточность</td></tr>
+  <tr><td><b>Защита от stampede:</b> <code>Lazy&lt;TValue&gt;</code> как значение словаря или <code>SemaphoreSlim</code> на ключ — фабрика выполняется ровно один раз</td><td>прямой мост к проекту №13 (Redis)</td></tr>
+  <tr><td><b>Сравнить с IMemoryCache и HybridCache (.NET 9):</b> прогнать свой бенчмарк против них, посмотреть их исходники — там те же идеи</td><td>знание стандартной библиотеки «изнутри»</td></tr>
+  <tr><td><b>Метрики в System.Diagnostics.Metrics</b> (<code>Meter</code>, счётчики hit/miss/evictions) — чтобы их видел OpenTelemetry</td><td>мост к проекту №8 (наблюдаемость)</td></tr>
+  <tr><td><b>Шардирование:</b> N внутренних словарей по хэшу ключа — снизить contention на записи ещё сильнее; замерить, когда это окупается</td><td>то же мышление, что шардирование БД, на минималках</td></tr>
+  <tr><td><b>Async-фабрика:</b> <code>GetOrAddAsync(Func&lt;TKey, Task&lt;TValue&gt;&gt;)</code> — и сразу вопрос: что кэшировать, Task или результат? (кэшировать Task — но тогда упавший Task залипает в кэше; почини это)</td><td>тонкости async, кэширование Task'ов</td></tr>
+</table>
+
+<p class="sub" style="margin-top:40px">Конспект «что понял» после разбора — 5–10 строк своими словами, как советует твой же чек-лист. Следующий проект по порядку тем: <b>AspNetLab (№5)</b>.</p>
+
+</div>
+</body>
+</html>

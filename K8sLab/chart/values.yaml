@@ -1,0 +1,15 @@
+# values.yaml — параметры по умолчанию; на окружениях переопределяются:
+#   helm upgrade --install aspnetlab ./chart --set replicaCount=3 -f values.prod.yaml
+replicaCount: 2
+
+image:
+  repository: aspnetlab
+  tag: "0.1"
+  pullPolicy: Never   # kind: образ загружен напрямую
+
+dispatcher:
+  sendDelayMilliseconds: 100
+
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 256Mi }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TestingLab · план изучения</title>
+<style>
+:root{
+  --accent:#512BD4; --accent-soft:#ede9fb; --accent-deep:#3a1d9e;
+  --ink:#1c1c22; --muted:#6c6c7a; --line:#e7e7ef; --bg:#fbfbfd; --card:#ffffff;
+  --code-bg:#f4f3fb; --ok:#1a8a5a; --warn:#b45309; --code-ink:#3a1d9e;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --accent:#a78bfa; --accent-soft:#2a2350; --accent-deep:#c4b2ff;
+    --ink:#e8e8f0; --muted:#9a9ab0; --line:#2c2c38; --bg:#141419; --card:#1d1d26;
+    --code-bg:#26262f; --ok:#41d99a; --warn:#f2a35c; --code-ink:#c4b2ff;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:15px; line-height:1.6;}
+.wrap{max-width:880px; margin:0 auto; padding:48px 28px 80px}
+header{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:28px}
+.kicker{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700}
+h1{font-size:32px; line-height:1.15; margin:10px 0 6px; letter-spacing:-.02em}
+.sub{color:var(--muted); font-size:14px}
+h2{font-size:22px; margin:44px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); letter-spacing:-.01em}
+h2 .n{color:var(--accent); font-weight:800; margin-right:8px}
+p{margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; background:var(--code-bg); color:var(--code-ink); padding:1.5px 5px; border-radius:5px}
+table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14px}
+th,td{border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--accent-soft); color:var(--accent-deep); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin:14px 0}
+.q{border-left:4px solid var(--ok); padding:8px 16px; margin:10px 0; background:var(--card); border-radius:0 10px 10px 0}
+.q b{color:var(--ok)}
+.warn{border-left:4px solid var(--warn); padding:10px 16px; background:var(--card); border-radius:0 10px 10px 0; margin:14px 0}
+.warn b:first-child{color:var(--warn)}
+.file{font-weight:700; color:var(--accent-deep)}
+li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №10 · Тестирование</div>
+  <h1>TestingLab — план изучения</h1>
+  <div class="sub">Testcontainers · реальный Postgres в тесте · что не поймать in-memory провайдером — закрывает раздел 13 из «200 ответов»</div>
+</header>
+
+<h2><span class="n">1</span>Порядок чтения (~1 вечер)</h2>
+<table>
+  <tr><th>Шаг</th><th>Файл</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td class="file">src/TestingLab.Domain/Debts.cs</td><td>Три поведения, живущие в БД: unique-индекс, сырой SQL (date_trunc), xmin-конкуренция.</td></tr>
+  <tr><td>2</td><td class="file">tests/DebtServiceTests.cs → PostgresFixture</td><td>Жизненный цикл контейнера: один на класс, TRUNCATE между тестами, ryuk-жнец.</td></tr>
+  <tr><td>3</td><td class="file">4 теста по очереди</td><td>Каждый — про то, что in-memory провайдер либо молча пропустит, либо не умеет вовсе.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Что мокать, а что нет.</b> Мокать — чужие НЕконтролируемые границы (внешние API, часы, случайность). НЕ мокать — свою базу: репозиторий с замоканным DbContext тестирует мок, а не поведение. Тест-пирамида для бэкенда сегодня выглядит скорее как «ромб»: много интеграционных на реальной инфраструктуре (Testcontainers сделал их дешёвыми), юниты — для чистой логики.</p>
+<p><b>Почему in-memory провайдер — ловушка.</b> Он не проверяет индексы и constraints, не исполняет SQL, не знает транзакций и конкуренции. Тест <code>DuplicateContractNumber</code> с ним «зелёный» — а прод падает. Сама Microsoft в документации говорит: не используйте для тестов.</p>
+<p><b>Экономика контейнеров.</b> Старт Postgres ~2–3 сек → контейнер на тест слишком дорого. Паттерн: контейнер на класс/коллекцию (<code>IClassFixture</code>), изоляция — очистка данных (<code>TRUNCATE ... RESTART IDENTITY</code>) в <code>InitializeAsync</code> перед каждым тестом. Для больших схем есть библиотека Respawn.</p>
+<p><b>Проверяй базу, не трекер.</b> Сохранил одним контекстом — читай другим. Один контекст вернёт объект из identity map, даже если в базу ничего не доехало.</p>
+</div>
+<div class="warn"><b>Пойманный нюанс:</b> в xUnit v2 <code>IAsyncLifetime</code> возвращает <code>Task</code>, в xUnit v3 — <code>ValueTask</code>. Написал по-новому на старом шаблоне — CS0738 на ровном месте.</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 13:</b> тест-пирамида и её современный вид; что мокать; почему не in-memory провайдер (с примерами из этого проекта); Testcontainers — как работает (Docker API, ryuk), экономика контейнер-на-класс; изоляция тестов; flaky-тесты (время! см. FakeTimeProvider в TtlCache); интеграционные vs e2e.</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>WebApplicationFactory + Testcontainers: интеграционный тест API AspNetLab с реальным Postgres (подмена строки соединения через ConfigureWebHost)</td><td>полный стек интеграционного теста</td></tr>
+  <tr><td>Kafka в Testcontainers: тест outbox-цикла OrderFlow (записал → воркер опубликовал → консьюмер обработал)</td><td>тестирование событийных систем</td></tr>
+  <tr><td>Respawn вместо ручного TRUNCATE</td><td>изоляция на больших схемах</td></tr>
+  <tr><td>Контрактный тест gRPC: клиент со старой версией .proto против нового сервера</td><td>совместимость контрактов (мост к GrpcLab)</td></tr>
+</table>
+
+</div>
+</body>
+</html>

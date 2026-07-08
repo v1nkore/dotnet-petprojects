@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GrpcLab.Client/GrpcLab.Client.csproj" />
+    <Project Path="src/GrpcLab.Server/GrpcLab.Server.csproj" />
+  </Folder>
+</Solution>

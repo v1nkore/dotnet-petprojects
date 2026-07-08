@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ObservabilityLab · план изучения</title>
+<link rel="stylesheet" href="../guide.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Pet-проект №8 · Наблюдаемость</div>
+  <h1>ObservabilityLab — план изучения</h1>
+  <div class="sub">OpenTelemetry · сквозной трейс через HTTP, Outbox и Kafka · Jaeger · Prometheus — закрывает раздел 15 из «200 ответов». Код — в ../OrderFlow</div>
+</header>
+
+<h2><span class="n">1</span>Порядок изучения (~1–2 вечера)</h2>
+<table>
+  <tr><th>Шаг</th><th>Что</th><th>На что смотреть</th></tr>
+  <tr><td>1</td><td>Запусти стек и создай пару заказов (README)</td><td>Открой Jaeger UI (16686), найди трейс POST /orders — 21 спан через 3 сервиса. Покликай спаны: тайминги, теги, четыре попытки вызова банка.</td></tr>
+  <tr><td>2</td><td class="file">OrderFlow/Orders/Program.cs</td><td>Подключение SDK: WithTracing (инструментации + свои источники + OTLP-экспортёр) и WithMetrics (+ Prometheus). Заметь: Npgsql-спаны — одной строкой AddSource("Npgsql").</td></tr>
+  <tr><td>3</td><td class="file">Shared/Kafka/KafkaTelemetry.cs</td><td>Propagation руками: Inject в заголовки сообщения, Extract у консьюмера. W3C traceparent — тот же формат, что в HTTP.</td></tr>
+  <tr><td>4</td><td class="file">Shared/Outbox/OutboxEntities.cs + OutboxPublisher.cs</td><td>Колонка TraceParent — починка разрыва трейса (см. раздел 3).</td></tr>
+  <tr><td>5</td><td>Prometheus UI (9090)</td><td>Query: <code>rate(http_server_request_duration_seconds_count[1m])</code> — это R из RED.</td></tr>
+</table>
+
+<h2><span class="n">2</span>Ключевые идеи</h2>
+<div class="card">
+<p><b>Три сигнала.</b> Метрики — агрегаты, дёшевы, отвечают «что происходит» (алерты). Трейсы — путь конкретного запроса, отвечают «где именно тормозит/падает». Логи — детали в точке. Связка: алерт по метрике → трейс медленного запроса → логи по trace id.</p>
+<p><b>Activity = span.</b> В .NET трейсинг встроен в BCL: <code>ActivitySource.StartActivity()</code> создаёт спан, OTel SDK подписывается на источники по имени и экспортирует. ASP.NET Core, HttpClient, Npgsql уже инструментированы — свои спаны нужны только для того, чего SDK не видит (Kafka).</p>
+<p><b>Propagation.</b> Контекст (trace id + parent span id) едет между процессами в заголовке <code>traceparent</code>. HTTP — автоматически. Kafka, очереди, фоновые джобы — руками: Inject/Extract через <code>Propagators.DefaultTextMapPropagator</code>. Правило: любой асинхронный разрыв требует явного проноса контекста.</p>
+<p><b>RED поверх готовых метрик.</b> Rate = <code>rate(..._count[1m])</code>, Errors = то же с фильтром по 5xx, Duration = histogram_quantile по бакетам. Ничего специально писать не пришлось — инструментация ASP.NET Core уже отдаёт гистограмму длительностей по роутам.</p>
+</div>
+<div class="warn"><b>Главная находка — трейс рвётся на Outbox.</b> Первая версия: 2 спана вместо 21. Публикатор живёт в фоновом цикле — Activity от HTTP-запроса давно нет, publish начинал новый трейс. Решение: сохранить <code>Activity.Current?.Id</code> (W3C traceparent) в outbox-строку при записи и передать как родителя при публикации. Этот паттерн спрашивают у тех, кто заявляет «настраивал трейсинг в микросервисах»: связал ли ты асинхронные куски.</div>
+<div class="tip"><b>Бонус, который сделал трейс золотым:</b> HttpClient-инструментация показывает КАЖДЫЙ ретрай Polly отдельным спаном — в Jaeger видно три красных POST /charge (500) и четвёртый зелёный. Идеальная картинка «как наблюдаемость объясняет поведение resilience-политик».</div>
+
+<h2><span class="n">3</span>Мостик к вопросам собеса</h2>
+<div class="q"><b>Раздел 15:</b> логи/метрики/трейсы и их назначение; correlation id vs trace id; как работает propagation (HTTP и очереди); спан, его атрибуты, kind (Producer/Consumer/Server/Client); сэмплирование (head vs tail) и зачем; RED/USE; pull vs push (Prometheus vs OTLP push); structured logging и связь логов с trace id; во что стоит алертить (симптомы, не причины).</div>
+
+<h2><span class="n">4</span>Куда масштабировать</h2>
+<table>
+  <tr><th>Идея</th><th>Что прокачивает</th></tr>
+  <tr><td>Grafana поверх Prometheus: дашборд RED по /orders + panel по runtime-метрикам</td><td>завершение стека визуализацией</td></tr>
+  <tr><td>Связать логи с трейсом: Serilog + trace id в каждой записи, «logs to trace» переход</td><td>третий сигнал в связке</td></tr>
+  <tr><td>Свои бизнес-метрики: Meter + счётчик «саг завершено/отменено», гистограмма длительности саги</td><td>System.Diagnostics.Metrics</td></tr>
+  <tr><td>Tail-based sampling через OTel Collector (сохранять только медленные/ошибочные трейсы)</td><td>прод-конфигурация: Collector как буфер</td></tr>
+</table>
+
+</div>
+</body>
+</html>

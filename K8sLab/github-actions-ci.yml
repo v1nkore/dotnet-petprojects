@@ -1,0 +1,55 @@
+# Референсный пайплайн (положить в .github/workflows/ci.yml репозитория).
+# Классическая цепочка: build → test → образ → деплой.
+name: ci
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "10.0.x" }
+      - run: dotnet restore
+      - run: dotnet build -c Release --no-restore
+      - run: dotnet test -c Release --no-build   # красные тесты валят пайплайн — образ не соберётся
+
+  docker:
+    needs: build-test                             # только после зелёных тестов
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # Тег = SHA коммита: каждый образ уникален и трассируем до коммита.
+          # Никаких :latest в проде — latest не откатишь.
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    environment: production                       # manual approval настраивается тут
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      # kubeconfig кластера — из секрета
+      - run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          helm upgrade --install aspnetlab ./PetProjects/K8sLab/chart \
+            --kubeconfig kubeconfig \
+            --set image.repository=ghcr.io/${{ github.repository }} \
+            --set image.tag=${{ github.sha }} \
+            --set image.pullPolicy=IfNotPresent \
+            --wait --timeout 3m
+          # --wait: если новые поды не прошли probes, helm вернёт ошибку —
+          # и можно автоматически откатить: helm rollback aspnetlab
