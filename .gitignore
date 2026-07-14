@@ -7,3 +7,7 @@ obj/
 
 # Claude Code local config
 .claude/
+
+# логи бенчмарков и нагрузочных прогонов (содержат локальные пути машины)
+BenchmarkDotNet.Artifacts/*.log
+**/PerfLab.LoadTest/reports/
