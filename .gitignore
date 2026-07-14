@@ -9,5 +9,5 @@ obj/
 .claude/
 
 # логи бенчмарков и нагрузочных прогонов (содержат локальные пути машины)
-BenchmarkDotNet.Artifacts/*.log
+**/BenchmarkDotNet.Artifacts/*.log
 **/PerfLab.LoadTest/reports/
