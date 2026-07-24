@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Design · 5 разборов</title>
+<style>
+:root{--bg:#0b0d10;--panel:#13171c;--line:#222a33;--ink:#e8edf2;--dim:#8a96a3;--faint:#5a6571;--accent:#7cc4ff;--purple:#b39cff;--good:#6ee7a8;--warm:#ffb86b;--mono:'SF Mono',ui-monospace,Consolas,monospace;--sans:-apple-system,'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;padding:34px 20px 90px;max-width:860px;margin:0 auto;-webkit-font-smoothing:antialiased}
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 18px;line-height:1.25}
+h2{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:30px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);color:var(--accent)}
+h3{font-size:15.5px;font-weight:600;margin:22px 0 8px;color:var(--warm)}
+p{margin:11px 0;color:#d7dee6}
+ul,ol{margin:11px 0 11px 24px}
+li{margin:5px 0;color:#d7dee6}
+strong{color:var(--ink);font-weight:650}
+em{color:var(--purple);font-style:italic}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(124,196,255,.35)}
+a:hover{border-bottom-color:var(--accent)}
+code{font-family:var(--mono);font-size:.9em;background:#0c1014;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#c7d6e6}
+pre{background:#0c1014;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0;overflow-x:auto}
+pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.55;color:#a8c5dd;white-space:pre}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--panel);color:var(--ink);font-weight:600;white-space:nowrap}
+td{color:#cdd6df}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.sd-sec{margin-top:34px;padding-top:8px}
+</style>
+</head><body>
+<div class="eyebrow">раздел 16 · пэт-проект</div>
+<h1>SystemDesign — 5 письменных разборов</h1>
+<p>Pet-проект №4 из чек-листа (письменный, не код). Закрывает раздел 16 из «200 ответов».</p>
+<h2>Шаблон (им же пользуйся на собесе, вслух, по шагам)</h2>
+<ol><li><strong>Требования</strong> — функциональные + нефункциональные (SLA, латентность, консистентность). Задай уточняющие вопросы — это оценивается.</li><li><strong>Оценка нагрузки</strong> — RPS, объём данных, рост. Порядки, не точность.</li><li><strong>Схема</strong> — компоненты и стрелки. Начни с простой, усложняй по запросу.</li><li><strong>Детализация</strong> — данные, API, ключевые потоки. Здесь всплывают паттерны из твоих проектов.</li><li><strong>Bottleneck и эволюция</strong> — что упадёт первым при ×10 и что с этим делать.</li></ol>
+<h2>Разборы</h2>
+<table><thead><tr><th>Файл</th><th>Что тренирует</th><th>Опирается на проекты</th></tr></thead><tbody><tr><td><a href="#sd-01" target="_self" target="_blank" rel="noopener">01-payment-gateway.md</a></td><td>идемпотентность, саги, консистентность денег</td><td>OrderFlow целиком</td></tr><tr><td><a href="#sd-02" target="_self" target="_blank" rel="noopener">02-url-shortener.md</a></td><td>классика: кэш, шардирование, генерация ключей</td><td>TtlCache, RedisLab</td></tr><tr><td><a href="#sd-03" target="_self" target="_blank" rel="noopener">03-notifications.md</a></td><td>очереди, приоритеты, дедупликация, rate limit провайдеров</td><td>AspNetLab, OrderFlow</td></tr><tr><td><a href="#sd-04" target="_self" target="_blank" rel="noopener">04-webhooks.md</a></td><td>приём чужого трафика: подписи, ретраи, DLQ</td><td>OrderFlow (обратная сторона)</td></tr><tr><td><a href="#sd-05" target="_self" target="_blank" rel="noopener">05-feed.md</a></td><td>fan-out on write/read, горячие ключи</td><td>RedisLab</td></tr></tbody></table>
+<p>Каждый разбор — 10–15 минут чтения. После — закрой файл и проговори схему вслух: на собесе оценивают речь и структуру, а не память.</p>
+<div class="sd-sec" id="sd-01"><hr><h1>Платёжный шлюз (твой домен — начинай собес с него)</h1>
+<h2>1. Требования</h2>
+<ul><li><strong>Ф:</strong> принять платёж (карта/СБП), провести через банк-эквайер, вернуть статус, вебхук мерчанту, возвраты.</li><li><strong>НФ:</strong> деньги не теряются и не дублируются (главное!), доступность 99.95%, p99 ответа API &lt; 500 мс (сам процессинг асинхронный), аудит каждого перехода статуса.</li></ul>
+<h2>2. Нагрузка</h2>
+<ul><li>1 млн платежей/день ≈ 12 RPS средних, пик ×20 (распродажи) ≈ 250 RPS записи. Немного! Платёжки падают не от RPS, а от <strong>консистентности и внешних зависимостей</strong>.</li><li>Запись платежа ~2 КБ × 1 млн/день ≈ 2 ГБ/день, хранить годы (комплаенс) → партиционирование по месяцам.</li></ul>
+<h2>3. Схема</h2>
+<pre><code>мерчант → API GW → Payment API → Postgres (платёж + outbox, ОДНА транзакция)
+                                     ↓ outbox-воркер
+                                   Kafka: payment.commands
+                                     ↓
+                              Processor (идемпотентный консьюмер)
+                                     ↓ HTTP + retry/CB/timeout + idempotency key
+                                 Банк-эквайер 💥
+                                     ↓ исход → outbox → Kafka: payment.events
+                       ┌─────────────┴──────────────┐
+                 Webhook-воркер (мерчанту)      Ledger/отчётность</code></pre>
+<p>Это OrderFlow один в один, с усилениями ниже.</p>
+<h2>4. Детализация</h2>
+<ul><li><strong>Идемпотентность на входе:</strong> мерчант шлёт <code>Idempotency-Key</code>; уникальный индекс по нему; повтор → тот же ответ, не второй платёж. (Как таблица ProcessedMessage, но на HTTP-краю.)</li><li><strong>Статусы:</strong> <code>Created → Processing → Succeeded/Failed/Refunded</code> — только через state machine, каждый переход пишется в append-only лог (аудит).</li><li><strong>Вызов банка:</strong> idempotency key банка = наш payment id; retry только на timeout/5xx; после N неудач — статус <code>Unknown</code> + фоновая сверка статуса у банка (нельзя ретраить вслепую то, что могло пройти!).</li><li><strong>Деньги:</strong> decimal в minor units; ledger двойной записью (каждая операция — дебет+кредит, сумма проводок = 0) — сверка находит расхождения арифметикой.</li><li><strong>Вебхуки мерчанту:</strong> отдельная очередь, ретраи с backoff, подпись HMAC (см. разбор 04).</li></ul>
+<h2>5. Bottleneck и эволюция</h2>
+<ul><li><strong>Первым падает банк-эквайер</strong> → circuit breaker + очередь сглаживает пик + второй эквайер с маршрутизацией.</li><li>Postgres на записи → партиционирование по времени; шардировать по merchant_id, когда один инстанс перестанет тянуть.</li><li>Сверка (reconciliation) с банком — ежедневный batch: расхождения будут всегда, вопрос — найдёшь ли ты их раньше клиента.</li></ul></div>
+<div class="sd-sec" id="sd-02"><hr><h1>URL Shortener (классика — разминка любого собеса)</h1>
+<h2>1. Требования</h2>
+<ul><li><strong>Ф:</strong> POST длинный → короткий код; GET /{code} → 301 редирект; TTL/кастомные алиасы — опционально; клики — счётчик.</li><li><strong>НФ:</strong> редирект p99 &lt; 50 мс; чтение доминирует (100:1); доступность важнее консистентности счётчиков.</li></ul>
+<h2>2. Нагрузка</h2>
+<ul><li>100 млн новых/мес ≈ 40 RPS записи; чтение ×100 ≈ 4000 RPS.</li><li>Запись: код (7 симв) + URL (~500 Б) × 100 млн/мес ≈ 50 ГБ/мес → за 5 лет ~3 ТБ: одна БД не смертельно, но шардирование заложить.</li><li>Кодов надо: base62, 7 символов = 62⁷ ≈ 3.5 трлн — хватит навсегда.</li></ul>
+<h2>3. Схема</h2>
+<pre><code>запись:  API → генератор кода → БД (code → url)
+чтение:  GET /{code} → кэш (Redis) → hit 95%+ → 301
+                          ↓ miss
+                         БД → заполнить кэш → 301
+клики:   fire-and-forget в Kafka → агрегатор → счётчики батчами</code></pre>
+<h2>4. Детализация</h2>
+<ul><li><strong>Генерация кода — сердце разбора.</strong> Варианты:</li></ul>
+<ol><li>hash(url) — коллизии, одинаковый URL = одинаковый код (иногда нежелательно);</li><li>случайный + проверка уникальности — лишний запрос к БД;</li><li><strong>счётчик → base62</strong> — монотонный, предсказуемый (утечка объёмов бизнеса), зато без коллизий;</li><li>прод-ответ: <strong>диапазоны id</strong> — координатор (БД/ZooKeeper) выдаёт сервису блок [1000000..1099999], сервис раздаёт из памяти без походов в БД. Кончился — взял следующий.</li></ol>
+<ul><li><strong>Кэш:</strong> cache-aside + TTL (RedisLab), 20% ключей дают 95% трафика. Stampede на вирусной ссылке → single-flight (уже реализовано в RedisLab).</li><li><strong>Счётчики кликов</strong> — не UPDATE на каждый клик (умрёт от contention): событие в Kafka, агрегатор пишет батчами раз в N секунд. Eventual consistency здесь норм.</li><li><strong>404/удалённые:</strong> кэшировать и негативные ответы (короткий TTL) — иначе боты по несуществующим кодам пробивают кэш в БД.</li></ul>
+<h2>5. Bottleneck и эволюция</h2>
+<ul><li>Чтение — уже за кэшем; следующий предел — сама БД по объёму → шардирование по коду (первые символы или hash % N), код самодостаточен для роутинга.</li><li>Геораспределение: редирект-ноды + реплики кэша по регионам, запись — в один регион (запись редкая).</li></ul></div>
+<div class="sd-sec" id="sd-03"><hr><h1>Сервис нотификаций (email / SMS / push)</h1>
+<h2>1. Требования</h2>
+<ul><li><strong>Ф:</strong> единый API «отправь», 3 канала, шаблоны, статус доставки, отписки/предпочтения.</li><li><strong>НФ:</strong> OTP-SMS — секунды (критично), маркетинг — можно часами; не слать дважды; уважать лимиты провайдеров; ночью маркетинг не слать.</li></ul>
+<h2>2. Нагрузка</h2>
+<ul><li>10 млн/день ≈ 120 RPS средних; маркетинговая кампания — всплеск: 1 млн сообщений «одним нажатием». Вывод: <strong>очередь обязательна</strong>, API только принимает.</li></ul>
+<h2>3. Схема</h2>
+<pre><code>клиенты → Notification API → валидация, предпочтения, дедуп
+                               ↓ (обогащение шаблоном)
+              Kafka: notif.high (OTP) | notif.bulk (маркетинг)   ← два топика = приоритеты
+                               ↓
+          Sender-воркеры по каналам (email/sms/push), rate limiter НА ПРОВАЙДЕРА
+                               ↓ retry/CB (Polly)
+                        Провайдеры 💥 (SMTP, SMS-шлюз, FCM/APNS)
+                               ↓ статусы/бонсы → Kafka → Status store</code></pre>
+<p>Это AspNetLab (принял → 202 → воркер), выросший до продовой топологии.</p>
+<h2>4. Детализация</h2>
+<ul><li><strong>Приоритеты = отдельные топики/очереди</strong>, не поле в сообщении: OTP не должен стоять за миллионом маркетинга. У каждого — свой пул воркеров.</li><li><strong>Дедупликация:</strong> idempotency key от клиента + окно «то же сообщение тому же адресату за N минут» (Redis SETNX c TTL).</li><li><strong>Rate limiting провайдера:</strong> token bucket на каждого (SMS-шлюз примет 100/с — не больше); при превышении сообщение ждёт в очереди, а не дропается.</li><li><strong>Ретраи:</strong> transient (timeout, 5xx) — backoff+jitter; постоянные (невалидный номер, hard bounce) — сразу в Failed + событие для чистки базы адресов. Различать — как 402 vs 500 в OrderFlow.</li><li><strong>Статусы:</strong> отправлено ≠ доставлено; доставка приходит асинхронно (webhook от провайдера — см. разбор 04).</li><li><strong>Тихие часы/предпочтения</strong> — на этапе приёма (отложить до утра = scheduled-очередь), не в воркере.</li></ul>
+<h2>5. Bottleneck и эволюция</h2>
+<ul><li>Провайдеры — всегда первые: мульти-провайдер с failover и распределением (80/20).</li><li>Kafka-партиции по получателю — порядок сообщений одному юзеру.</li><li>Шаблонизация тяжёлая (рендер HTML) → отдельный пул, кэш скомпилированных шаблонов (TtlCache!).</li></ul></div>
+<div class="sd-sec" id="sd-04"><hr><h1>Обработка вебхуков (входящих, от провайдеров/банков)</h1>
+<h2>1. Требования</h2>
+<ul><li><strong>Ф:</strong> принять POST от N внешних систем (банки, PSP, SMS-шлюзы), проверить подлинность, обработать ровно один раз, отдать 200 быстро.</li><li><strong>НФ:</strong> не потерять НИ ОДНОГО (это деньги/статусы); отвечать &lt; 1 с (иначе отправитель ретраит и заваливает); переживать их всплески и свои деплои.</li></ul>
+<h2>2. Нагрузка</h2>
+<ul><li>Обычно скромная (тысячи/мин), но: отправитель при недоступности <strong>ретраит с нарастанием</strong> — после твоего 10-минутного даунтайма прилетит буря. Проектируем на ×50 от среднего.</li></ul>
+<h2>3. Схема</h2>
+<pre><code>провайдер → API GW → Webhook receiver: проверил подпись → сырое тело в БД/Kafka → 200 OK
+                                              ↓ (всё! никакой бизнес-логики до ответа)
+                                     Kafka: webhooks.raw
+                                              ↓
+                              Обработчики по типам (идемпотентные)
+                                              ↓ не смогли N раз
+                                            DLQ + алерт</code></pre>
+<p><strong>Золотое правило: принять ≠ обработать.</strong> Ресивер только валидирует и складывает — обработка асинхронная.</p>
+<h2>4. Детализация</h2>
+<ul><li><strong>Подлинность:</strong> HMAC-подпись тела ключом из личного кабинета (сравнение constant-time!); плюс allowlist IP, если провайдер публикует. Timestamp в подписи против replay-атак (окно ±5 мин).</li><li><strong>Идемпотентность:</strong> у событий провайдера есть id → таблица processed (как в OrderFlow); нет id → hash(тело+тип). Провайдеры ШЛЮТ ДУБЛИ, это норма протокола (at-least-once с их стороны).</li><li><strong>Порядок не гарантирован:</strong> <code>payment.succeeded</code> может прийти раньше <code>payment.created</code> → обработчик либо переупорядочивает по timestamp, либо state machine терпит «события из будущего» (отложить в retry).</li><li><strong>Сырое тело хранить как пришло</strong> (юридический след + можно переиграть обработку после фикса бага — replay из Kafka).</li><li><strong>Свой даунтайм:</strong> очередь переживает деплой; отправитель получит 200 от живого инстанса за балансировщиком.</li></ul>
+<h2>5. Bottleneck и эволюция</h2>
+<ul><li>Обработчики отстают от бури ретраев → скейлить консьюмеров (партиции!), ресивер держит, т.к. тонкий.</li><li>Один «ядовитый» вебхук валит консьюмер в цикле → DLQ после N попыток + алерт (учебное упрощение OrderFlow здесь уже недопустимо).</li><li>Много провайдеров → нормализация в единый формат событий на границе, дальше — общий конвейер.</li></ul></div>
+<div class="sd-sec" id="sd-05"><hr><h1>Лента (feed) — новости/активность</h1>
+<h2>1. Требования</h2>
+<ul><li><strong>Ф:</strong> пользователь видит ленту постов тех, на кого подписан, новые сверху; постинг; пагинация.</li><li><strong>НФ:</strong> чтение ленты p99 &lt; 200 мс; чтения ≫ записи (1000:1); свежесть — секунды, не мгновенно (eventual OK).</li></ul>
+<h2>2. Нагрузка</h2>
+<ul><li>10 млн DAU × 10 открытий ленты = 100 млн чтений/день ≈ 1200 RPS (пик ×5).</li><li>1 млн постов/день ≈ 12 RPS записи. Асимметрия — главный факт дизайна.</li><li>Подписки: медиана 200, но есть аккаунты с 10 млн подписчиков — <strong>проблема знаменитостей</strong>.</li></ul>
+<h2>3. Схема — два подхода (сравнение и есть ответ)</h2>
+<pre><code>Fan-out on WRITE (push):  пост → воркер раскладывает id поста
+                          в Redis-ленту КАЖДОГО подписчика (list/zset, обрезка до 800)
+   чтение: ZRANGE своей ленты → hydrate постов из кэша → мгновенно
+   минус: пост знаменитости = 10 млн записей
+
+Fan-out on READ (pull):   чтение → взять список подписок → последние посты каждого → merge
+   минус: чтение дорогое, а чтений в 1000 раз больше
+
+Прод-ответ — ГИБРИД: обычные авторы → push; знаменитости → pull,
+их посты подмешиваются при чтении. Порог — по числу подписчиков (~10–100k).</code></pre>
+<h2>4. Детализация</h2>
+<ul><li><strong>Хранение ленты:</strong> Redis zset <code>feed:{userId}</code> → member = postId, score = timestamp; обрезка до N последних (полная история — в БД, лента — кэш горячего).</li><li><strong>Пагинация — keyset, не offset:</strong> курсор = score последнего показанного (<code>ZRANGEBYSCORE max=cursor limit N</code>); offset на глубоких страницах деградирует (замерено в идеях EfCoreLab).</li><li><strong>Hydration:</strong> лента хранит id, тела постов — отдельный кэш post:{id} (cache-aside) — пост правится в одном месте, не в миллионах лент.</li><li><strong>Постинг:</strong> API → Kafka → fan-out воркеры (это просто OrderFlow-конвейер); партиционирование по авторам.</li><li><strong>Горячий ключ:</strong> лента знаменитости при pull-чтении — реплики кэша + локальный L1 (TtlCache!) на несколько секунд.</li></ul>
+<h2>5. Bottleneck и эволюция</h2>
+<ul><li>Fan-out воркеры отстают в пиковый вечер → это ок (лента отстаёт на секунды), скейлятся партициями.</li><li>Redis по памяти: 10 млн юзеров × 800 id × ~30 Б ≈ 240 ГБ → кластер, шардирование по userId; ленты «спящих» юзеров не материализуем вовсе (lazy rebuild при возврате).</li><li>Ранжирование вместо хронологии → отдельный сервис скоринга при чтении: архитектура не меняется, меняется сортировка.</li></ul></div>
+</body></html>

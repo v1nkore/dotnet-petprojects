@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolidMap · ООП, SOLID, паттерны</title>
+<style>
+:root{--bg:#0b0d10;--panel:#13171c;--line:#222a33;--ink:#e8edf2;--dim:#8a96a3;--faint:#5a6571;--accent:#7cc4ff;--purple:#b39cff;--good:#6ee7a8;--warm:#ffb86b;--mono:'SF Mono',ui-monospace,Consolas,monospace;--sans:-apple-system,'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;padding:34px 20px 90px;max-width:860px;margin:0 auto;-webkit-font-smoothing:antialiased}
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 18px;line-height:1.25}
+h2{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:30px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);color:var(--accent)}
+h3{font-size:15.5px;font-weight:600;margin:22px 0 8px;color:var(--warm)}
+p{margin:11px 0;color:#d7dee6}
+ul,ol{margin:11px 0 11px 24px}
+li{margin:5px 0;color:#d7dee6}
+strong{color:var(--ink);font-weight:650}
+em{color:var(--purple);font-style:italic}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(124,196,255,.35)}
+a:hover{border-bottom-color:var(--accent)}
+code{font-family:var(--mono);font-size:.9em;background:#0c1014;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#c7d6e6}
+pre{background:#0c1014;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0;overflow-x:auto}
+pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.55;color:#a8c5dd;white-space:pre}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--panel);color:var(--ink);font-weight:600;white-space:nowrap}
+td{color:#cdd6df}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.sd-sec{margin-top:34px;padding-top:8px}
+</style>
+</head><body>
+<div class="eyebrow">раздел 6 · пэт-проект</div>
+<h1>SolidMap — ООП, SOLID и паттерны на живых примерах из твоих проектов</h1>
+<p>Раздел 6 из «200 ответов» — теория, но отвечать её лучше примерами из кода, который ты «писал». Каждая буква и паттерн ниже — ссылка на реальное место в PetProjects.</p>
+<h2>SOLID</h2>
+<table><thead><tr><th>Принцип</th><th>Живой пример</th><th>Где</th></tr></thead><tbody><tr><td><strong>S</strong>RP</td><td><code>CorrelationIdMiddleware</code> делает одно: correlation id. Тайминги — отдельный middleware, хотя «можно было в один»</td><td>AspNetLab/Middleware</td></tr><tr><td><strong>O</strong>CP</td><td>Новый сценарий в CleanLab = новый handler; существующие не трогаются. Новая стратегия кэша в бенчмарке = новый класс за <code>IBenchCache</code></td><td>CleanLab/Application, TtlCache/benchmarks</td></tr><tr><td><strong>L</strong>SP</td><td>Все три кэша бенчмарка взаимозаменяемы за <code>IBenchCache</code> — бенчмарк не знает, кто внутри. Нарушение LSP сломало бы замер</td><td>TtlCache/benchmarks/Caches.cs</td></tr><tr><td><strong>I</strong>SP</td><td><code>IDebtRepository</code> (запись) и <code>IDebtReadStore</code> (чтение) — раздельные узкие порты, хотя реализует их один класс. Query-handler не видит методов записи</td><td>CleanLab/Application</td></tr><tr><td><strong>D</strong>IP</td><td>Application объявляет порты, Infrastructure реализует — зависимость направлена от деталей к абстракции. Вся суть Clean Architecture</td><td>CleanLab целиком</td></tr></tbody></table>
+<h2>Паттерны GoF, которые ты можешь показать в коде</h2>
+<table><thead><tr><th>Паттерн</th><th>Где</th><th>Как</th></tr></thead><tbody><tr><td><strong>Strategy</strong></td><td>TtlCache/benchmarks</td><td>три стратегии синхронизации за одним интерфейсом</td></tr><tr><td><strong>Template Method</strong></td><td>OrderFlow/Shared/KafkaConsumerService</td><td>базовый класс держит цикл/коммиты, наследник реализует только <code>HandleAsync</code></td></tr><tr><td><strong>Decorator</strong></td><td>OrderFlow/Payments Polly-pipeline</td><td>resilience-handler'ы оборачивают HttpClient слоями, клиент не знает</td></tr><tr><td><strong>Observer</strong></td><td>CleanLab доменные события; MediatR notifications</td><td>подписчики реагируют на факт, издатель их не знает</td></tr><tr><td><strong>Factory Method</strong></td><td>CleanLab <code>Debt.Open(...)</code></td><td>валидация + событие в точке создания, ctor приватный</td></tr><tr><td><strong>Chain of Responsibility</strong></td><td>AspNetLab pipeline; MediatR behaviors</td><td>каждый узел решает: обработать/передать дальше/оборвать</td></tr><tr><td><strong>Proxy</strong></td><td>EfCoreLab lazy-loading proxies</td><td>прокси наследует сущность и подкладывает запрос к БД в геттер (и это источник N+1!)</td></tr><tr><td><strong>Repository / Unit of Work</strong></td><td>CleanLab порты; сам DbContext — UoW</td><td>«DbContext уже UoW, а DbSet уже репозиторий» — хороший дискуссионный ответ</td></tr><tr><td><strong>Singleton (как lifetime, не как класс)</strong></td><td>везде DI</td><td>анти-паттерн «класс-синглтон» vs нормальный singleton через контейнер</td></tr></tbody></table>
+<h2>Архитектурные паттерны (не GoF, но спросят)</h2>
+<p>Outbox, Saga, Circuit Breaker, Retry+Jitter, Idempotent Consumer, Cache-Aside, CQRS — все реализованы в OrderFlow/RedisLab/CleanLab, разборы в их study-guide'ах.</p>
+<h2>Как отвечать на «расскажи про SOLID»</h2>
+<p>Не определениями, а парой «принцип → своя история»: <em>«ISP — у меня в CQRS-модуле чтение и запись это два интерфейса, реализованных одним классом: query-handler физически не может позвать Save»</em>. Одна конкретика дороже пяти определений.</p>
+</body></html>

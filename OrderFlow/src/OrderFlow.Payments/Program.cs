@@ -33,7 +33,7 @@ builder.Services.AddOpenTelemetry()
 //   3. circuit breaker— если банк массово падает, перестаём его добивать
 //   4. attempt timeout— потолок на ОДНУ попытку (ловит «зависшие» запросы)
 builder.Services.AddHttpClient<BankClient>(c => c.BaseAddress = new Uri("http://localhost:5301"))
-    .AddResilienceHandler("bank", pipeline =>
+    .AddResiliencePipeline("bank", pipeline =>
     {
         pipeline.AddTimeout(TimeSpan.FromSeconds(10));
 

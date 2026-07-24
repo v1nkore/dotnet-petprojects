@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behavioral · STAR-истории</title>
+<style>
+:root{--bg:#0b0d10;--panel:#13171c;--line:#222a33;--ink:#e8edf2;--dim:#8a96a3;--faint:#5a6571;--accent:#7cc4ff;--purple:#b39cff;--good:#6ee7a8;--warm:#ffb86b;--mono:'SF Mono',ui-monospace,Consolas,monospace;--sans:-apple-system,'Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;padding:34px 20px 90px;max-width:860px;margin:0 auto;-webkit-font-smoothing:antialiased}
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 18px;line-height:1.25}
+h2{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:30px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);color:var(--accent)}
+h3{font-size:15.5px;font-weight:600;margin:22px 0 8px;color:var(--warm)}
+p{margin:11px 0;color:#d7dee6}
+ul,ol{margin:11px 0 11px 24px}
+li{margin:5px 0;color:#d7dee6}
+strong{color:var(--ink);font-weight:650}
+em{color:var(--purple);font-style:italic}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(124,196,255,.35)}
+a:hover{border-bottom-color:var(--accent)}
+code{font-family:var(--mono);font-size:.9em;background:#0c1014;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#c7d6e6}
+pre{background:#0c1014;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0;overflow-x:auto}
+pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.55;color:#a8c5dd;white-space:pre}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13.5px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--panel);color:var(--ink);font-weight:600;white-space:nowrap}
+td{color:#cdd6df}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.sd-sec{margin-top:34px;padding-top:8px}
+</style>
+</head><body>
+<div class="eyebrow">раздел 17 · пэт-проект</div>
+<h1>Behavioral — STAR-истории для поведенческой части</h1>
+<p>Pet-проект №15 из чек-листа (не код). Закрывает раздел 17 из «200 ответов». Здесь каркасы — наполни своими историями и <strong>проговори вслух</strong>: оценивают гладкость подачи, а не идею. Одна история — 2–3 минуты речи.</p>
+<h2>Формат STAR</h2>
+<ul><li><strong>S</strong>ituation — контекст в 2 предложениях (проект, роль, ставки);</li><li><strong>T</strong>ask — что требовалось именно от тебя;</li><li><strong>A</strong>ction — что сделал ТЫ (не «мы»!), 60% времени истории;</li><li><strong>R</strong>esult — измеримый итог + чему научился.</li></ul>
+<p>Антипаттерны: «мы» вместо «я» · история без цифр в результате · виноваты все вокруг · идеальный герой без ошибок (не верят).</p>
+<h2>6 обязательных заготовок</h2>
+<h3>1. Сложная техническая задача</h3>
+<p>Каркас: система деградировала / нетривиальный баг → как локализовал (метрики? трейс? профайлер?) → гипотезы и проверка → решение → цифры до/после. <em>Подсказка из твоего домена: инцидент с платежами/взысканием, N+1 или пул соединений под нагрузкой.</em></p>
+<h3>2. Конфликт в команде</h3>
+<p>Каркас: разногласие по архитектуре/приоритетам → как перевёл спор из мнений в факты (прототип, замер, ADR) → компромисс → отношения сохранены. Ловушка вопроса: проверяют, умеешь ли не выигрывать спор, а решать проблему.</p>
+<h3>3. Своя ошибка / фейл</h3>
+<p>Каркас: конкретная ошибка (задеплоил, уронил, не проверил) → как обнаружил → что сделал СРАЗУ (честно сказал, откатил) → системный фикс, чтобы не повторилось (тест, алерт, процесс). Здесь нельзя юлить: история без реального фейла = красный флаг.</p>
+<h3>4. Менторинг / рост коллеги</h3>
+<p>Каркас: джун/новичок буксовал → как диагностировал, чего не хватает → формат помощи (парное, код-ревью с объяснениями, план) → коллега стал самостоятелен (чем измерил).</p>
+<h3>5. Сорванный дедлайн / работа под давлением</h3>
+<p>Каркас: стало ясно, что не успеваем → как быстро поднял флаг (не молчал до конца!) → что порезал (скоуп, не качество) → передоговорился со стейкхолдерами → выводы про оценки.</p>
+<h3>6. Технический долг</h3>
+<p>Каркас: долг мешал бизнесу (медленные релизы, инциденты) → как обосновал бизнесу на языке денег/рисков → инкрементальный план (не «перепишем всё») → эффект в цифрах.</p>
+<h2>Вопросы, которые стоит задать ИМ (заготовь 3–4)</h2>
+<p>Как устроен процесс ревью и деплоя? · Что случается при инциденте ночью? · Как принимаются архитектурные решения? · Почему открыта позиция?</p>
+</body></html>
