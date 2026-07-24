@@ -100,8 +100,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Потокобезопасный in-memory кэш с TTL: ленивое протухание при чтении + фоновый свипер на <b>PeriodicTimer</b>. Время — инжектируемая зависимость (<b>TimeProvider</b>), поэтому 11 тестов на TTL пробегают за 142 мс без единого Task.Delay. Плюс бенчмарк трёх стратегий синхронизации.</p>
     <p class="hl">Бенчмарк: <b>ConcurrentDictionary</b> быстрее <b>lock</b> в 64× на 8 потоках (3 мс против 193 мс, 1571 lock contention) — и, сюрприз, быстрее даже на одном потоке. <b>ReaderWriterLockSlim</b> — посередине и почему это ловушка.</p>
     <div class="links">
-      <a class="primary" href="TtlCache/study-guide.html">Study-guide</a>
-      <a href="TtlCache/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="TtlCache/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="TtlCache/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>dotnet test</code> · демо <code>dotnet run --project src/TtlCache.Demo -c Release</code> · без инфраструктуры</div>
   </div>
@@ -112,8 +112,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Сервис нотификаций как каркас для «внутренностей» ASP.NET Core: свои <b>middleware</b> (correlation id + тайминги), кастомный <b>action-фильтр</b>, воркер на <b>BackgroundService</b> + bounded Channel, Options с валидацией на старте, ProblemDetails. Ловушка <b>captive dependency</b> включается флагом и роняет приложение на старте — так и задумано.</p>
     <p class="hl">Два пойманных бага — готовые истории на собес: <b>[property: Required]</b> на позиционном record (500 в рантайме) и enum-сериализация как часть контракта API.</p>
     <div class="links">
-      <a class="primary" href="AspNetLab/study-guide.html">Study-guide</a>
-      <a href="AspNetLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="AspNetLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="AspNetLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>dotnet test</code> · <code>dotnet run --project src/AspNetLab.Api</code> · ловушка: <code>-- --BreakDi=true</code></div>
   </div>
@@ -124,8 +124,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Настоящий Postgres 16 и домен взыскания (<b>Debtor → Debt → Payment</b>, 300k строк). Четыре сценария с доказательствами цифрами: <b>N+1</b> (101 запрос → 1, считает DbCommandInterceptor), цена <b>change tracking</b> (6×), <b>optimistic concurrency</b> через xmin, <b>EXPLAIN ANALYZE</b> до/после покрывающего индекса.</p>
     <p class="hl">Seq Scan 12.1 мс → <b>Index Only Scan</b> 2.4 мс — и нюанс, что без <b>VACUUM</b> (visibility map) Index Only Scan не появится вовсе. Плюс «UPDATE, который не отправился» и почему EF — не для bulk-вставок.</p>
     <div class="links">
-      <a class="primary" href="EfCoreLab/study-guide.html">Study-guide</a>
-      <a href="EfCoreLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="EfCoreLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="EfCoreLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>docker compose up -d</code> → <code>dotnet run --project src/EfCoreLab.App -c Release</code> · сценарии идемпотентны</div>
   </div>
@@ -136,8 +136,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Флагман: Orders + Payments + намеренно нестабильный «банк» (35% пятисоток, зависания, лимиты). <b>Kafka</b> (KRaft), <b>Outbox</b> одной транзакцией с бизнес-данными, <b>идемпотентные консьюмеры</b>, <b>saga-хореография</b> с компенсацией, <b>Polly v8</b>: timeout → retry → circuit breaker → attempt timeout.</p>
     <p class="hl">Живой прогон: 7 заказов — 6 дошли до <b>Completed</b> сквозь случайные 500-е (ретраи видны в логах), лимитный корректно отменён компенсацией. 402 не ретраится — бизнес-отказ ≠ transient.</p>
     <div class="links">
-      <a class="primary" href="OrderFlow/study-guide.html">Study-guide</a>
-      <a href="OrderFlow/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="OrderFlow/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="OrderFlow/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>docker compose up -d --wait</code> → три терминала: Bank, Payments, Orders (команды в README)</div>
   </div>
@@ -148,8 +148,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Один метод «получить долг» в двух транспортах на одном сервере: gRPC (protobuf/HTTP2) и REST (JSON/HTTP1.1). Клиент замеряет p50/p95/p99, показывает <b>server streaming</b> и <b>deadline</b> (отменяет работу на обеих сторонах). В .proto — комментарии о правилах эволюции контракта.</p>
     <p class="hl">Сюрприз: на localhost с крошечным payload <b>REST быстрее gRPC</b> (0.18 vs 0.28 мс p50) — и это корректный результат для такого профиля. Плюс история про нечестный бенчмарк: interceptor логировал каждый вызов и портил замер.</p>
     <div class="links">
-      <a class="primary" href="GrpcLab/study-guide.html">Study-guide</a>
-      <a href="GrpcLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="GrpcLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="GrpcLab/README.md">README</a>
     </div>
     <div class="run">Запуск: два терминала — <code>Server</code>, затем <code>Client</code> · без инфраструктуры</div>
   </div>
@@ -160,8 +160,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Redis + «медленная БД» со счётчиком обращений. Три сценария: <b>cache-aside</b> (225 мс → 1 мс), <b>cache stampede</b> — 50 конкурентных промахов тремя способами, <b>инвалидация</b> через DEL при записи. Распределённый лок собран по-честному: SET NX PX + токен владельца + Lua compare-and-delete.</p>
     <p class="hl">Stampede цифрами: наивный cache-aside — <b>50 походов в БД</b>, single-flight (SemaphoreSlim) — <b>1</b>, распределённый лок — <b>1</b> (и работает между инстансами).</p>
     <div class="links">
-      <a class="primary" href="RedisLab/study-guide.html">Study-guide</a>
-      <a href="RedisLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="RedisLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="RedisLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>docker compose up -d</code> → <code>dotnet run --project src/RedisLab.App -c Release</code></div>
   </div>
@@ -172,8 +172,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Интеграционные тесты на <b>Testcontainers</b>: реальный Postgres поднимается из теста сам (и сам умирает через ryuk). Один контейнер на класс + TRUNCATE между тестами. Каждый из 4 тестов — про поведение, которое <b>in-memory провайдер не поймает</b>: unique-индекс, сырой SQL, xmin-конкуренция.</p>
     <p class="hl">Главный тезис: с in-memory провайдером тест на дубликат договора «зелёный», а прод падает. <b>Зелёный тест, красный прод</b> — худший из исходов.</p>
     <div class="links">
-      <a class="primary" href="TestingLab/study-guide.html">Study-guide</a>
-      <a href="TestingLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="TestingLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="TestingLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>dotnet test</code> · нужен только запущенный Docker</div>
   </div>
@@ -184,8 +184,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Модуль «долги» на четырёх слоях: Domain (агрегат с инвариантами, value object <b>Money</b>, доменные события) ← Application (<b>CQRS через MediatR</b>, порты) ← Infrastructure ← Api. Все стрелки зависимостей — внутрь. Плюс честная секция «где это оверинжиниринг».</p>
     <p class="hl">Выигрыш виден в тестах: домен тестируется голым <b>new</b>, application — без моков БД. Мысленный эксперимент «замени in-memory на EF» затрагивает один файл.</p>
     <div class="links">
-      <a class="primary" href="CleanLab/study-guide.html">Study-guide</a>
-      <a href="CleanLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="CleanLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="CleanLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>dotnet test</code> · API на :5400 · без инфраструктуры</div>
   </div>
@@ -196,8 +196,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">AspNetLab в локальном кластере <b>kind</b>: multi-stage Dockerfile, Deployment с probes и limits, ConfigMap → .NET-конфиг, Service, HPA. Затем те же манифесты — <b>Helm-чартом</b>, и референсный GitHub Actions пайплайн (build → test → образ по SHA → helm --wait).</p>
     <p class="hl">Проверенное демо отката: деплой битого образа НЕ уронил сервис (старые реплики жили, rolling update ждал readiness), <b>kubectl rollout undo</b> вернул всё за секунды.</p>
     <div class="links">
-      <a class="primary" href="K8sLab/study-guide.html">Study-guide</a>
-      <a href="K8sLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="K8sLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="K8sLab/README.md">README</a>
     </div>
     <div class="run">Запуск: <code>kind create cluster</code> → команды в README (kind + helm установлены)</div>
   </div>
@@ -208,8 +208,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Две части: <b>BenchmarkDotNet</b> — парсинг через Span (0 байт аллокаций против 168 КБ) и отчёт через StringBuilder (×20 быстрее конкатенации); <b>NBomber</b> — p50/p95/p99 от RPS для пары эндпоинтов, различающихся одной строкой: await Task.Delay против Thread.Sleep.</p>
     <p class="hl"><b>Thread pool starvation вживую:</b> async плоский на любом RPS, blocking на 400 RPS — p99 ×7 (476 мс). Симптом из прода: «латентность растёт, а CPU спит».</p>
     <div class="links">
-      <a class="primary" href="PerfLab/study-guide.html">Study-guide</a>
-      <a href="PerfLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="PerfLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="PerfLab/README.md">README</a>
     </div>
     <div class="run">Запуск: бенчмарки <code>-- --job short</code> · нагрузка <code>dotnet run</code> (~1 мин, самодостаточна)</div>
   </div>
@@ -220,8 +220,8 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc"><b>OpenTelemetry поверх OrderFlow</b> (код живёт там): трейсы через HTTP, Outbox и Kafka в Jaeger, метрики в Prometheus. Kafka-propagation руками (inject/extract заголовков), producer/consumer-спаны, Npgsql-спаны одной строкой.</p>
     <p class="hl">Один трейс саги — <b>21 спан через три сервиса</b>, в нём видны все 4 ретрая Polly. Пойманный нюанс: трейс рвался на outbox-таблице — починено сохранением traceparent в строке события.</p>
     <div class="links">
-      <a class="primary" href="ObservabilityLab/study-guide.html">Study-guide</a>
-      <a href="ObservabilityLab/README.md">README</a>
+      <a target="_blank" rel="noopener" class="primary" href="ObservabilityLab/study-guide.html">Study-guide</a>
+      <a target="_blank" rel="noopener" href="ObservabilityLab/README.md">README</a>
     </div>
     <div class="run">Запуск: стек OrderFlow · Jaeger UI на :16686, Prometheus на :9090</div>
   </div>
@@ -237,14 +237,14 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Пять полных разборов по шаблону «требования → нагрузка → схема → детализация → bottleneck»: <b>платёжный шлюз</b> (твой домен, начинай собес с него), <b>URL shortener</b>, <b>нотификации</b>, <b>вебхуки</b>, <b>лента</b>. Каждый опирается на паттерны из кодовых проектов — Outbox, идемпотентность, cache-aside, fan-out.</p>
     <p class="hl">Метод важнее ответов: шаблон в README — это скелет твоего рассказа на собесе. Прочитал разбор → закрыл → проговорил схему вслух.</p>
     <div class="links">
-      <a class="primary" href="SystemDesign/README.md">README + шаблон</a>
-      <a href="SystemDesign/01-payment-gateway.md">Платёжный шлюз</a>
-      <a href="SystemDesign/02-url-shortener.md">Shortener</a>
-      <a href="SystemDesign/03-notifications.md">Нотификации</a>
-      <a href="SystemDesign/04-webhooks.md">Вебхуки</a>
-      <a href="SystemDesign/05-feed.md">Feed</a>
+      <a target="_blank" rel="noopener" class="primary" href="SystemDesign/study-guide.html">Шаблон + разборы</a>
+      <a target="_blank" rel="noopener" href="SystemDesign/study-guide.html#sd-01">Платёжный шлюз</a>
+      <a target="_blank" rel="noopener" href="SystemDesign/study-guide.html#sd-02">Shortener</a>
+      <a target="_blank" rel="noopener" href="SystemDesign/study-guide.html#sd-03">Нотификации</a>
+      <a target="_blank" rel="noopener" href="SystemDesign/study-guide.html#sd-04">Вебхуки</a>
+      <a target="_blank" rel="noopener" href="SystemDesign/study-guide.html#sd-05">Feed</a>
     </div>
-    <div class="run">Формат: markdown (открывай в IDE) · ~10–15 мин на разбор · чек-лист п.4</div>
+    <div class="run">Формат: html · ~10–15 мин на разбор · чек-лист п.4</div>
   </div>
 
   <div class="project">
@@ -253,9 +253,9 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Карта теории на <b>живых примерах из твоих же проектов</b>: каждая буква SOLID и девять паттернов GoF (Strategy, Template Method, Decorator, Observer, Proxy…) — со ссылкой на конкретный файл, где это реализовано. Плюс архитектурные паттерны (Outbox, Saga, CB) с отсылками к их study-guide'ам.</p>
     <p class="hl">Главный приём: на «расскажи про SOLID» отвечать не определениями, а парой «принцип → своя история из кода». Одна конкретика дороже пяти определений.</p>
     <div class="links">
-      <a class="primary" href="SolidMap/README.md">Карта</a>
+      <a target="_blank" rel="noopener" class="primary" href="SolidMap/study-guide.html">Карта</a>
     </div>
-    <div class="run">Формат: один markdown · читается за вечер вместе с раздела 6 «200 ответов»</div>
+    <div class="run">Формат: html · читается за вечер вместе с раздела 6 «200 ответов»</div>
   </div>
 
   <div class="project">
@@ -264,9 +264,9 @@ footer code{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; b
     <p class="desc">Каркасы <b>STAR-историй</b> на шесть обязательных вопросов: сложная задача, конфликт, своя ошибка, менторинг, сорванный дедлайн, тех-долг. К каждому — структура ответа, ловушки вопроса и антипаттерны («мы» вместо «я», результат без цифр). Плюс вопросы, которые стоит задать им.</p>
     <p class="hl">Каркасы надо наполнить СВОИМИ историями и проговорить вслух — на собесе оценивают гладкость подачи, а не идею. Это единственный модуль, который за тебя не сделать.</p>
     <div class="links">
-      <a class="primary" href="Behavioral/README.md">Каркасы</a>
+      <a target="_blank" rel="noopener" class="primary" href="Behavioral/study-guide.html">Каркасы</a>
     </div>
-    <div class="run">Формат: markdown-воркбук · 2–3 минуты речи на историю · чек-лист п.15</div>
+    <div class="run">Формат: html-воркбук · 2–3 минуты речи на историю · чек-лист п.15</div>
   </div>
 
 </div>
